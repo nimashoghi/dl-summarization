@@ -12,6 +12,8 @@ from data import BigPatentDataModule
 
 
 class SummarizerModule(nn.Module):
+    model: BartForConditionalGeneration
+
     def __init__(self, tokenizer: BartTokenizer):
         super(SummarizerModule, self).__init__()
 
@@ -27,17 +29,19 @@ class SummarizerModule(nn.Module):
         output_ids = input["output_ids"]
         output_mask = input["output_mask"]
 
-        print(
-            input_ids.size(), input_mask.size(), output_ids.size(), output_mask.size()
-        )
+        # print(
+        #     input_ids.size(), input_mask.size(), output_ids.size(), output_mask.size()
+        # )
 
-        output_ids[output_ids[:, :] == self.tokenizer.pad_token_id] = -100
+        # output_ids[output_ids[:, :] == self.tokenizer.pad_token_id] = -100
+        # print(output_ids[(output_ids <= 0) & (output_ids != -100)])
 
         return self.model(
             input_ids,
             attention_mask=input_mask,
             decoder_attention_mask=output_mask,
             labels=output_ids,
+            return_dict=True,
         )
 
 
@@ -55,12 +59,16 @@ class Summarizer(pl.LightningModule):
     def training_step(self, batch, batch_idx):
         output = self.model(batch)
 
-        return dict(loss=output["loss"], log=dict(train_loss=output["loss"]))
+        self.log(
+            "train_loss", output["loss"], on_step=True, on_epoch=True, prog_bar=True
+        )
+        return dict(loss=output["loss"])
 
     def validation_step(self, batch, batch_idx):
         output = self.model(batch)
 
-        return dict(val_loss=output["loss"], log=dict(val_loss=output["loss"]))
+        self.log("val_loss", output["loss"], on_step=True, on_epoch=True, prog_bar=True)
+        return dict(val_loss=output["loss"])
 
     def configure_optimizers(self):
         optimizer = AdamW(
@@ -78,8 +86,8 @@ args_dict = dict(
     weight_decay=0.0,
     adam_epsilon=1e-8,
     warmup_steps=0,
-    train_batch_size=2,
-    eval_batch_size=2,
+    train_batch_size=1,
+    eval_batch_size=1,
     num_train_epochs=2,
     gradient_accumulation_steps=8,
     n_gpu=2,
@@ -111,5 +119,6 @@ if __name__ == "__main__":
     trainer = pl.Trainer(
         **train_params,
         logger=WandbLogger(name="bart-summarization"),
+        distributed_backend="ddp"
     )
     trainer.fit(model, data_module)

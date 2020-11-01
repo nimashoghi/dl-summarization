@@ -34,7 +34,7 @@ def read_data(split_type: str):
 
 
 class BigPatentDataModule(pl.LightningDataModule):
-    def __init__(self, tokenizer: BartTokenizer, batch_size=8, sequence_length=1024):
+    def __init__(self, tokenizer: BartTokenizer, batch_size=1, sequence_length=1024):
         super(BigPatentDataModule, self).__init__()
 
         self.batch_size = batch_size
@@ -68,6 +68,7 @@ class BigPatentDataModule(pl.LightningDataModule):
             MyDataset(read_data(split_type)),
             batch_size=self.batch_size,
             collate_fn=self.batch_collate,
+            num_workers=8,
         )
 
     def test_dataloader(self) -> DataLoader:
