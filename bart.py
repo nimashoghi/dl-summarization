@@ -84,25 +84,19 @@ args_dict = dict(
     weight_decay=0.0,
     adam_epsilon=1e-8,
     warmup_steps=0,
-    train_batch_size=4,
-    eval_batch_size=4,
+    train_batch_size=3,
+    eval_batch_size=3,
     num_train_epochs=2,
-    gradient_accumulation_steps=8,
     n_gpu=2,
-    fp_16=True,  # if you want to enable 16-bit training then install apex and set this to true
-    max_grad_norm=1.0,  # if you enable 16-bit training then set this to a sensible value, 0.5 is a good default
     seed=42,
 )
 
 
 args = argparse.Namespace(**args_dict)
 train_params = dict(
-    accumulate_grad_batches=args.gradient_accumulation_steps,
     gpus=args.n_gpu,
     max_epochs=args.num_train_epochs,
-    precision=16 if args.fp_16 else 32,
-    gradient_clip_val=args.max_grad_norm,
-    # fast_dev_run=True,
+    precision=16,
     terminate_on_nan=True,
 )
 
