@@ -102,7 +102,6 @@ class Summarizer(pl.LightningModule):
 
 #%%
 args_dict = dict(
-    output_dir="",
     learning_rate=3e-4,
     weight_decay=0.0,
     adam_epsilon=1e-8,

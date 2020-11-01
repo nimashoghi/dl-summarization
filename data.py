@@ -3,13 +3,22 @@ import json
 import os
 
 import pytorch_lightning as pl
+from torch.utils.data import IterableDataset
 from torch.utils.data.dataloader import DataLoader
-from transformers import BartConfig, BartTokenizer
+from transformers import BartTokenizer
 from transformers.tokenization_utils_base import (
     PaddingStrategy,
     TensorType,
     TruncationStrategy,
 )
+
+
+class MyDataset(IterableDataset):
+    def __init__(self, generator):
+        self.generator = generator
+
+    def __iter__(self):
+        return iter(self.generator)
 
 
 def read_data(split_type: str):
@@ -33,6 +42,7 @@ class BigPatentDataModule(pl.LightningDataModule):
         self.tokenizer = tokenizer
 
     def batch_collate(self, batch):
+        print(batch)
         input = self.tokenizer(
             [input for input, _ in batch],
             max_length=self.sequence_length,
@@ -54,23 +64,18 @@ class BigPatentDataModule(pl.LightningDataModule):
             output_mask=output["attention_mask"],
         )
 
-    def test_dataloader(self) -> DataLoader:
+    def make_dataloader(self, split_type: str):
         return DataLoader(
-            read_data("test"),
+            MyDataset(read_data(split_type)),
             batch_size=self.batch_size,
             collate_fn=self.batch_collate,
         )
+
+    def test_dataloader(self) -> DataLoader:
+        return self.make_dataloader("test")
 
     def train_dataloader(self) -> DataLoader:
-        return DataLoader(
-            read_data("train"),
-            batch_size=self.batch_size,
-            collate_fn=self.batch_collate,
-        )
+        return self.make_dataloader("train")
 
     def val_dataloader(self) -> DataLoader:
-        return DataLoader(
-            read_data("val"),
-            batch_size=self.batch_size,
-            collate_fn=self.batch_collate,
-        )
+        return self.make_dataloader("val")
