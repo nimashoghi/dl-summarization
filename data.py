@@ -88,7 +88,7 @@ class BigPatentDataModule(pl.LightningDataModule):
         return self.make_dataloader("test")
 
     def train_dataloader(self) -> DataLoader:
-        return self.make_dataloader("val")
+        return self.make_dataloader("train")
 
     def val_dataloader(self) -> DataLoader:
         return self.make_dataloader("val")

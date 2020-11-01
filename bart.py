@@ -84,12 +84,12 @@ args_dict = dict(
     weight_decay=0.0,
     adam_epsilon=1e-8,
     warmup_steps=0,
-    train_batch_size=2,
-    eval_batch_size=2,
+    train_batch_size=4,
+    eval_batch_size=4,
     num_train_epochs=2,
     gradient_accumulation_steps=8,
     n_gpu=2,
-    fp_16=False,  # if you want to enable 16-bit training then install apex and set this to true
+    fp_16=True,  # if you want to enable 16-bit training then install apex and set this to true
     max_grad_norm=1.0,  # if you enable 16-bit training then set this to a sensible value, 0.5 is a good default
     seed=42,
 )
