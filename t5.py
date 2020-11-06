@@ -27,13 +27,6 @@ class SummarizerModule(nn.Module):
         output_ids = input["output_ids"]
         output_mask = input["output_mask"]
 
-        # print(
-        #     input_ids.size(), input_mask.size(), output_ids.size(), output_mask.size()
-        # )
-
-        # output_ids[output_ids[:, :] == self.tokenizer.pad_token_id] = -100
-        # print(output_ids[(output_ids <= 0) & (output_ids != -100)])
-
         return self.model(
             input_ids,
             attention_mask=input_mask,
@@ -102,15 +95,9 @@ train_params = dict(
 
 #%%
 if __name__ == "__main__":
-    from pytorch_lightning.loggers import WandbLogger
-
     tokenizer = T5Tokenizer.from_pretrained("t5-small")
     model = Summarizer(args, tokenizer)
     data_module = BigPatentDataModule(tokenizer, batch_size=args.train_batch_size)
 
-    trainer = pl.Trainer(
-        **train_params,
-        logger=WandbLogger(name="T5-summarization"),
-        distributed_backend="ddp"
-    )
+    trainer = pl.Trainer(**train_params, distributed_backend="ddp")
     trainer.fit(model, data_module)
