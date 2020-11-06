@@ -12,9 +12,9 @@ args_dict = dict(
     weight_decay=0.0,
     adam_epsilon=1e-8,
     warmup_steps=0,
-    train_batch_size=3,
-    eval_batch_size=3,
-    num_train_epochs=2,
+    train_batch_size=4,
+    eval_batch_size=4,
+    num_train_epochs=5,
     n_gpu=2,
     seed=42,
 )
