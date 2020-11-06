@@ -1,40 +1,20 @@
 import pytorch_lightning as pl
 from torch.optim import AdamW
-from transformers import AutoTokenizer
-from transformers.tokenization_utils_base import (
-    PaddingStrategy,
-    TensorType,
-    TruncationStrategy,
-)
-
-from longformer.longformer_encoder_decoder import (
-    LongformerEncoderDecoderConfig,
-    LongformerEncoderDecoderForConditionalGeneration,
-)
+from transformers import BartTokenizer, BartForConditionalGeneration
 
 
-class LongformerSummarizer(pl.LightningModule):
-    model: LongformerEncoderDecoderForConditionalGeneration
-    tokenizer: AutoTokenizer
+class BartSummarizer(pl.LightningModule):
+    model: BartForConditionalGeneration
+    tokenizer: BartTokenizer
 
     def __init__(self, hparams):
-        super(LongformerSummarizer, self).__init__()
+        super(BartSummarizer, self).__init__()
 
         self.hparams = hparams
 
-        config = LongformerEncoderDecoderConfig.from_pretrained(
-            "/workspaces/summarization-remote/pretrained/longformer-encdec-base-16384"
-        )
-        config.attention_dropout = 0.1
-        config.gradient_checkpointing = True
-        config.attention_mode = "sliding_chunks"
-        config.attention_window = [512] * config.encoder_layers
-        self.model = LongformerEncoderDecoderForConditionalGeneration.from_pretrained(
-            "/workspaces/summarization-remote/pretrained/longformer-encdec-base-16384",
-            config=config,
-        )
-        self.tokenizer = AutoTokenizer.from_pretrained(
-            "/workspaces/summarization-remote/pretrained/longformer-encdec-base-16384",
+        self.model = BartForConditionalGeneration.from_pretrained("facebook/bart-base")
+        self.tokenizer = BartTokenizer.from_pretrained(
+            "facebook/bart-base",
             fast=True,
         )
 
@@ -49,15 +29,15 @@ class LongformerSummarizer(pl.LightningModule):
         return self.model(
             input_ids,
             attention_mask=input_mask,
-            labels=output_ids,
             decoder_attention_mask=output_mask,
+            labels=output_ids,
             return_dict=True,
         )
 
     def generate_test(self, text, max_length=64, **kwargs):
         input = self.tokenizer(
             text,
-            max_length=16384,
+            max_length=1024,
             padding="max_length",
             truncation="longest_first",
             return_tensors="pt",

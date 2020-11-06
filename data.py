@@ -50,7 +50,7 @@ class BigPatentDataModule(pl.LightningDataModule):
         self,
         tokenizer: T5Tokenizer,
         batch_size=1,
-        encoder_sequence_length=4096,
+        encoder_sequence_length=1024,
         decoder_sequence_length=1024,
     ):
         super(BigPatentDataModule, self).__init__()
@@ -100,7 +100,7 @@ class BigPatentDataModule(pl.LightningDataModule):
             return
 
         dataset: MyDataset = worker_info.dataset
-        dataset.take_n = 50
+        dataset.take_n = 200
         dataset.skip_n += worker_id * dataset.take_n
 
     def make_dataloader(self, split_type: str):
