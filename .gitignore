@@ -177,3 +177,4 @@ dmypy.json
 
 bigPatentData/
 lightning_logs/
+pretrained/

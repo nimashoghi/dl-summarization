@@ -46,11 +46,18 @@ class MyDataset(IterableDataset):
 
 
 class BigPatentDataModule(pl.LightningDataModule):
-    def __init__(self, tokenizer: T5Tokenizer, batch_size=1, sequence_length=4096):
+    def __init__(
+        self,
+        tokenizer: T5Tokenizer,
+        batch_size=1,
+        encoder_sequence_length=4096,
+        decoder_sequence_length=1024,
+    ):
         super(BigPatentDataModule, self).__init__()
 
         self.batch_size = batch_size
-        self.sequence_length = sequence_length
+        self.encoder_sequence_length = encoder_sequence_length
+        self.decoder_sequence_length = decoder_sequence_length
         self.tokenizer = tokenizer
 
         self.datasets = dict()
@@ -67,17 +74,17 @@ class BigPatentDataModule(pl.LightningDataModule):
     def batch_collate(self, batch):
         input = self.tokenizer(
             [value["description"] for value in batch],
-            max_length=self.sequence_length,
-            padding=PaddingStrategy.MAX_LENGTH,
-            truncation=TruncationStrategy.LONGEST_FIRST,
-            return_tensors=TensorType.PYTORCH,
+            max_length=self.encoder_sequence_length,
+            padding="max_length",
+            truncation="longest_first",
+            return_tensors="pt",
         )
         output = self.tokenizer(
             [value["abstract"] for value in batch],
-            max_length=self.sequence_length,
-            padding=PaddingStrategy.MAX_LENGTH,
-            truncation=TruncationStrategy.LONGEST_FIRST,
-            return_tensors=TensorType.PYTORCH,
+            max_length=self.decoder_sequence_length,
+            padding="max_length",
+            truncation="longest_first",
+            return_tensors="pt",
         )
 
         return dict(

@@ -8,20 +8,23 @@ args_dict = dict(
     weight_decay=0.0,
     adam_epsilon=1e-8,
     warmup_steps=0,
-    train_batch_size=1,
-    eval_batch_size=1,
+    train_batch_size=3,
+    eval_batch_size=3,
     num_train_epochs=1,
-    n_gpu=2,
+    n_gpu=1,
     seed=42,
 )
 
 
 args = argparse.Namespace(**args_dict)
 train_params = dict(
+    # distributed_backend="ddp",
     gpus=args.n_gpu,
     max_epochs=args.num_train_epochs,
     precision=16,
     terminate_on_nan=True,
+    # fast_dev_run=True,
+    # gpus=0,
 )
 
 #%%
@@ -32,5 +35,5 @@ if __name__ == "__main__":
     model = LongformerSummarizer(args)
     data_module = BigPatentDataModule(model.tokenizer, batch_size=args.train_batch_size)
 
-    trainer = pl.Trainer(**train_params, distributed_backend="ddp")
+    trainer = pl.Trainer(**train_params)
     trainer.fit(model, data_module)
