@@ -1,20 +1,16 @@
 #%%
-from models.bart import BartSummarizer
+from models.longformer import LongformerSummarizer
 
 # %%
 with open("input.txt", "r") as f:
     text = f.read()
 
 #%%
-model: BartSummarizer = BartSummarizer({})
-
-
-#%%
-
-model.generate_test(text, max_length=64)
+model: LongformerSummarizer = LongformerSummarizer({})
+model.generate_test(text, max_length=1024)
 
 #%%
-model: BartSummarizer = BartSummarizer.load_from_checkpoint(
-    "lightning_logs/version_55/checkpoints/epoch=0.ckpt"
+model: LongformerSummarizer = LongformerSummarizer.load_from_checkpoint(
+    "lightning_logs/version_54/checkpoints/epoch=0.ckpt"
 )
 model.generate_test(text, max_length=1024)

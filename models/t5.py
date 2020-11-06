@@ -38,9 +38,9 @@ class T5Summarizer(pl.LightningModule):
         input = self.tokenizer(
             text,
             max_length=max_length,
-            padding=PaddingStrategy.MAX_LENGTH,
-            truncation=TruncationStrategy.LONGEST_FIRST,
-            return_tensors=TensorType.PYTORCH,
+            padding="max_length",
+            truncation="longest_first",
+            return_tensors="pt",
         )
         beam_outputs = self.generate(
             input["input_ids"],
