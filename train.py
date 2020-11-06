@@ -1,0 +1,38 @@
+#%%
+import argparse
+
+import pytorch_lightning as pl
+from transformers import T5Tokenizer
+
+from data import BigPatentDataModule
+from model import Summarizer
+
+args_dict = dict(
+    learning_rate=3e-4,
+    weight_decay=0.0,
+    adam_epsilon=1e-8,
+    warmup_steps=0,
+    train_batch_size=3,
+    eval_batch_size=3,
+    num_train_epochs=2,
+    n_gpu=2,
+    seed=42,
+)
+
+
+args = argparse.Namespace(**args_dict)
+train_params = dict(
+    gpus=args.n_gpu,
+    max_epochs=args.num_train_epochs,
+    precision=16,
+    terminate_on_nan=True,
+)
+
+#%%
+if __name__ == "__main__":
+    tokenizer = T5Tokenizer.from_pretrained("t5-small")
+    model = Summarizer(args, tokenizer)
+    data_module = BigPatentDataModule(tokenizer, batch_size=args.train_batch_size)
+
+    trainer = pl.Trainer(**train_params, distributed_backend="ddp")
+    trainer.fit(model, data_module)
