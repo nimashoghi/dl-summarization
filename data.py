@@ -46,7 +46,7 @@ class MyDataset(IterableDataset):
 
 
 class BigPatentDataModule(pl.LightningDataModule):
-    def __init__(self, tokenizer: T5Tokenizer, batch_size=1, sequence_length=1024):
+    def __init__(self, tokenizer: T5Tokenizer, batch_size=1, sequence_length=4096):
         super(BigPatentDataModule, self).__init__()
 
         self.batch_size = batch_size

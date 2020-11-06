@@ -8,17 +8,16 @@ from transformers.tokenization_utils_base import (
 )
 
 
-class Summarizer(pl.LightningModule):
+class T5Summarizer(pl.LightningModule):
     model: T5ForConditionalGeneration
     tokenizer: T5Tokenizer
 
-    def __init__(self, hparams, tokenizer: T5Tokenizer):
-        super(Summarizer, self).__init__()
+    def __init__(self, hparams):
+        super(T5Summarizer, self).__init__()
 
         self.hparams = hparams
-        self.tokenizer = tokenizer
-
         self.model = T5ForConditionalGeneration.from_pretrained("t5-small")
+        self.tokenizer = T5Tokenizer.from_pretrained("t5-small")
 
     def forward(self, input):
         input_ids = input["input_ids"]
