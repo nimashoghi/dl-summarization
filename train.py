@@ -10,7 +10,7 @@ args_dict = dict(
     warmup_steps=0,
     train_batch_size=1,
     eval_batch_size=1,
-    num_train_epochs=5,
+    num_train_epochs=1,
     n_gpu=2,
     seed=42,
 )

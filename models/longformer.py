@@ -1,22 +1,26 @@
 import pytorch_lightning as pl
 from torch.optim import AdamW
-from transformers import LongformerForMaskedLM, LongformerTokenizer
+from transformers import LongformerTokenizer
 from transformers.tokenization_utils_base import (
     PaddingStrategy,
     TensorType,
     TruncationStrategy,
 )
 
+from longformer.longformer.longformer_encoder_decoder import (
+    LongformerEncoderDecoderForConditionalGeneration,
+)
+
 
 class LongformerSummarizer(pl.LightningModule):
-    model: LongformerForMaskedLM
+    model: LongformerEncoderDecoderForConditionalGeneration
     tokenizer: LongformerTokenizer
 
     def __init__(self, hparams):
         super(LongformerSummarizer, self).__init__()
 
         self.hparams = hparams
-        self.model = LongformerForMaskedLM.from_pretrained(
+        self.model = LongformerEncoderDecoderForConditionalGeneration.from_pretrained(
             "allenai/longformer-base-4096"
         )
         self.tokenizer = LongformerTokenizer.from_pretrained(
@@ -28,6 +32,7 @@ class LongformerSummarizer(pl.LightningModule):
         input_mask = input["input_mask"]
 
         output_ids = input["output_ids"]
+        output_ids[output_ids == self.tokenizer.pad_token_id] = -100
 
         return self.model(
             input_ids,
@@ -39,7 +44,7 @@ class LongformerSummarizer(pl.LightningModule):
     def generate_test(self, text, max_length=64, **kwargs):
         input = self.tokenizer(
             text,
-            max_length=max_length,
+            max_length=4096,
             padding=PaddingStrategy.MAX_LENGTH,
             truncation=TruncationStrategy.LONGEST_FIRST,
             return_tensors=TensorType.PYTORCH,
