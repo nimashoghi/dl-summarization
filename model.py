@@ -1,6 +1,11 @@
 import pytorch_lightning as pl
 from torch.optim import AdamW
 from transformers import T5ForConditionalGeneration, T5Tokenizer
+from transformers.tokenization_utils_base import (
+    PaddingStrategy,
+    TensorType,
+    TruncationStrategy,
+)
 
 
 class Summarizer(pl.LightningModule):
@@ -30,6 +35,30 @@ class Summarizer(pl.LightningModule):
             return_dict=True,
         )
 
+    def generate_test(self, text, max_length=64, **kwargs):
+        input = self.tokenizer(
+            text,
+            max_length=max_length,
+            padding=PaddingStrategy.MAX_LENGTH,
+            truncation=TruncationStrategy.LONGEST_FIRST,
+            return_tensors=TensorType.PYTORCH,
+        )
+        beam_outputs = self.generate(
+            input["input_ids"],
+            max_length=max_length,
+            num_beams=5,
+            no_repeat_ngram_size=2,
+            num_return_sequences=5,
+            early_stopping=True,
+            **kwargs
+        )
+        for i, beam_output in enumerate(beam_outputs):
+            print(
+                "{}: {}".format(
+                    i, self.tokenizer.decode(beam_output, skip_special_tokens=True)
+                )
+            )
+
     def generate(self, input_ids, **kwargs):
         return self.model.generate(input_ids, **kwargs)
 
@@ -42,7 +71,7 @@ class Summarizer(pl.LightningModule):
         return dict(loss=output["loss"])
 
     def validation_step(self, batch, batch_idx):
-        output = self.model(batch)
+        output = self(batch)
 
         self.log("val_loss", output["loss"], on_step=True, on_epoch=True, prog_bar=True)
         return dict(val_loss=output["loss"])
