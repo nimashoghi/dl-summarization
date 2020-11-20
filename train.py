@@ -28,9 +28,9 @@ train_params = dict(
 #%%
 if __name__ == "__main__":
     from data import BigPatentDataModule
-    from models.bart import BartSummarizer
+    from models.blenderbot import BlenderbotSummarizer
 
-    model = BartSummarizer(args)
+    model = BlenderbotSummarizer(args)
     data = BigPatentDataModule(model.tokenizer, batch_size=args.batch_size)
 
     trainer = pl.Trainer(

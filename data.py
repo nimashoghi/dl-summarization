@@ -8,11 +8,8 @@ import torch.utils.data
 from torch.utils.data import IterableDataset
 from torch.utils.data.dataloader import DataLoader
 from transformers import T5Tokenizer
-from transformers.tokenization_utils_base import (
-    PaddingStrategy,
-    TensorType,
-    TruncationStrategy,
-)
+from transformers.tokenization_utils_base import (PaddingStrategy, TensorType,
+                                                  TruncationStrategy)
 
 
 def read_data(split_type: str, skip_n=0, take_n: Union[int, None] = None):
@@ -75,16 +72,16 @@ class BigPatentDataModule(pl.LightningDataModule):
         input = self.tokenizer(
             [value["description"] for value in batch],
             max_length=self.encoder_sequence_length,
-            padding="max_length",
-            truncation="longest_first",
-            return_tensors="pt",
+            padding=PaddingStrategy.MAX_LENGTH,
+            truncation=TruncationStrategy.LONGEST_FIRST,
+            return_tensors=TensorType.PYTORCH,
         )
         output = self.tokenizer(
             [value["abstract"] for value in batch],
             max_length=self.decoder_sequence_length,
-            padding="max_length",
-            truncation="longest_first",
-            return_tensors="pt",
+            padding=PaddingStrategy.MAX_LENGTH,
+            truncation=TruncationStrategy.LONGEST_FIRST,
+            return_tensors=TensorType.PYTORCH,
         )
 
         return dict(
