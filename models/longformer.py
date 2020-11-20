@@ -1,11 +1,6 @@
 import pytorch_lightning as pl
 from torch.optim import AdamW
 from transformers import AutoTokenizer
-from transformers.tokenization_utils_base import (
-    PaddingStrategy,
-    TensorType,
-    TruncationStrategy,
-)
 
 from longformer.longformer_encoder_decoder import (
     LongformerEncoderDecoderConfig,

@@ -8,10 +8,8 @@ args_dict = dict(
     weight_decay=0.0,
     adam_epsilon=1e-8,
     warmup_steps=0,
-    train_batch_size=2,
-    eval_batch_size=2,
+    batch_size=2,
     num_train_epochs=1,
-    n_gpu=2,
     seed=42,
 )
 
@@ -19,9 +17,9 @@ args_dict = dict(
 args = argparse.Namespace(**args_dict)
 train_params = dict(
     distributed_backend="ddp",
-    gpus=args.n_gpu,
+    gpus=-1,
     max_epochs=args.num_train_epochs,
-    precision=16,
+    # precision=16,
     terminate_on_nan=True,
     # fast_dev_run=True,
     # gpus=0,
@@ -33,7 +31,11 @@ if __name__ == "__main__":
     from models.bart import BartSummarizer
 
     model = BartSummarizer(args)
-    data_module = BigPatentDataModule(model.tokenizer, batch_size=args.train_batch_size)
+    data = BigPatentDataModule(model.tokenizer, batch_size=args.batch_size)
 
-    trainer = pl.Trainer(**train_params)
-    trainer.fit(model, data_module)
+    trainer = pl.Trainer(
+        # auto_scale_batch_size="binsearch",
+        **train_params,
+    )
+    trainer.fit(model, data)
+    # trainer.tune(model, data)

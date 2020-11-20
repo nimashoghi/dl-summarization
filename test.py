@@ -11,6 +11,6 @@ model.generate_test(text, max_length=1024)
 
 #%%
 model: LongformerSummarizer = LongformerSummarizer.load_from_checkpoint(
-    "lightning_logs/version_54/checkpoints/epoch=0.ckpt"
+    "/workspaces/summarization-remote/lightning_logs/version_58/checkpoints/epoch=0.ckpt"
 )
 model.generate_test(text, max_length=1024)
