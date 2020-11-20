@@ -1,41 +1,25 @@
 #%%
-import argparse
+from argparse import ArgumentParser
 
-import pytorch_lightning as pl
+from pytorch_lightning import Trainer
 
-args_dict = dict(
-    learning_rate=3e-4,
-    weight_decay=0.0,
-    adam_epsilon=1e-8,
-    warmup_steps=0,
-    batch_size=2,
-    num_train_epochs=1,
-    seed=42,
-)
+from data import BigPatentDataModule
+from models.prophetnet import ProphetNetSummarizer
 
-
-args = argparse.Namespace(**args_dict)
-train_params = dict(
-    distributed_backend="ddp",
-    gpus=-1,
-    max_epochs=args.num_train_epochs,
-    # precision=16,
-    terminate_on_nan=True,
-    # fast_dev_run=True,
-    # gpus=0,
-)
 
 #%%
 if __name__ == "__main__":
-    from data import BigPatentDataModule
-    from models.blenderbot import BlenderbotSummarizer
+    parser = ArgumentParser()
+    parser = ProphetNetSummarizer.add_model_specific_args(parser)
+    parser = Trainer.add_argparse_args(parser)
+    args = parser.parse_args()
 
-    model = BlenderbotSummarizer(args)
-    data = BigPatentDataModule(model.tokenizer, batch_size=args.batch_size)
+    trainer = Trainer.from_argparse_args(args)
 
-    trainer = pl.Trainer(
-        # auto_scale_batch_size="binsearch",
-        **train_params,
-    )
-    trainer.fit(model, data)
-    # trainer.tune(model, data)
+    model = ProphetNetSummarizer(**vars(args))
+    data = BigPatentDataModule(model.tokenizer, batch_size=model.hparams.batch_size)
+
+    if trainer.auto_lr_find or trainer.auto_scale_batch_size:
+        trainer.tune(model, data)
+    else:
+        trainer.fit(model, data)

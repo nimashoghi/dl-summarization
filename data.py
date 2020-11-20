@@ -7,14 +7,17 @@ import pytorch_lightning as pl
 import torch.utils.data
 from torch.utils.data import IterableDataset
 from torch.utils.data.dataloader import DataLoader
-from transformers import T5Tokenizer
-from transformers.tokenization_utils_base import (PaddingStrategy, TensorType,
-                                                  TruncationStrategy)
+from transformers import AutoTokenizer
+from transformers.tokenization_utils_base import (
+    PaddingStrategy,
+    TensorType,
+    TruncationStrategy,
+)
 
 
-def read_data(split_type: str, skip_n=0, take_n: Union[int, None] = None):
-    i = 0
-    for cpc_code in os.listdir(os.path.join("bigPatentData", split_type)):
+class BigPatentDataset(IterableDataset):
+    @staticmethod
+    def read_data(split_type: str, cpc_code: str):
         for file_name in os.listdir(
             os.path.join("bigPatentData", split_type, cpc_code)
         ):
@@ -22,33 +25,28 @@ def read_data(split_type: str, skip_n=0, take_n: Union[int, None] = None):
                 os.path.join("bigPatentData", split_type, cpc_code, file_name), "r"
             ) as fin:
                 for row in fin:
-                    index = i - skip_n
-                    i += 1
-
-                    if index < 0:
-                        continue
-                    if take_n is not None and index > take_n:
-                        break
                     yield json.loads(row)
 
-
-class MyDataset(IterableDataset):
-    def __init__(self, split_type: str, skip_n=0, take_n: Union[int, None] = None):
+    def __init__(self, split_type: str, cpc_code: str = None):
         self.split_type = split_type
-        self.skip_n = skip_n
-        self.take_n = take_n
+        self.cpc_code = cpc_code
 
     def __iter__(self):
-        return iter(read_data(self.split_type, skip_n=self.skip_n, take_n=self.take_n))
+        assert self.cpc_code is not None
+
+        return iter(BigPatentDataset.read_data(self.split_type, self.cpc_code))
+
+
+CPC_CODES = ["a", "b", "c", "d", "e", "f", "g", "h", "y"]
 
 
 class BigPatentDataModule(pl.LightningDataModule):
     def __init__(
         self,
-        tokenizer: T5Tokenizer,
+        tokenizer: AutoTokenizer,
         batch_size=1,
-        encoder_sequence_length=1024,
-        decoder_sequence_length=1024,
+        encoder_sequence_length=64,
+        decoder_sequence_length=64,
     ):
         super(BigPatentDataModule, self).__init__()
 
@@ -62,11 +60,11 @@ class BigPatentDataModule(pl.LightningDataModule):
     def setup(self, stage: Optional[str] = None):
         if stage == "fit" or stage is None:
             for split_type in ("train", "val"):
-                self.datasets[split_type] = MyDataset(split_type)
+                self.datasets[split_type] = BigPatentDataset(split_type)
 
         if stage == "test" or stage is None:
             for split_type in "test":
-                self.datasets[split_type] = MyDataset(split_type)
+                self.datasets[split_type] = BigPatentDataset(split_type)
 
     def batch_collate(self, batch):
         input = self.tokenizer(
@@ -96,16 +94,15 @@ class BigPatentDataModule(pl.LightningDataModule):
         if worker_info is None:
             return
 
-        dataset: MyDataset = worker_info.dataset
-        dataset.take_n = 200
-        dataset.skip_n += worker_id * dataset.take_n
+        dataset: BigPatentDataset = worker_info.dataset
+        dataset.cpc_code = CPC_CODES[worker_id]
 
     def make_dataloader(self, split_type: str):
         return DataLoader(
             self.datasets[split_type],
             batch_size=self.batch_size,
             collate_fn=self.batch_collate,
-            num_workers=8,
+            num_workers=len(CPC_CODES),
             pin_memory=True,
             worker_init_fn=self.worker_init_fn,
         )

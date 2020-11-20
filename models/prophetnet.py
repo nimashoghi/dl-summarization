@@ -1,27 +1,41 @@
+from argparse import ArgumentParser
+
 import pytorch_lightning as pl
 from torch.optim import AdamW
 from transformers import (
-    BlenderbotForConditionalGeneration,
-    BlenderbotSmallTokenizer,
+    ProphetNetForConditionalGeneration,
+    ProphetNetTokenizer,
     get_linear_schedule_with_warmup,
 )
 
 
-class BlenderbotSummarizer(pl.LightningModule):
-    model: BlenderbotForConditionalGeneration
-    tokenizer: BlenderbotSmallTokenizer
-
-    def __init__(self, hparams):
-        super(BlenderbotSummarizer, self).__init__()
-
-        self.hparams = hparams
-
-        self.model = BlenderbotForConditionalGeneration.from_pretrained(
-            "facebook/blenderbot-90M"
+class ProphetNetSummarizer(pl.LightningModule):
+    @staticmethod
+    def add_model_specific_args(parent_parser):
+        parser = ArgumentParser(parents=[parent_parser], add_help=False)
+        parser.add_argument("--adam_epsilon", type=float, default=1e-8)
+        parser.add_argument("--batch_size", type=int, default=6)
+        parser.add_argument(
+            "--learning_rate", "-lr", type=float, default=1.9054607179632464e-05
         )
-        self.tokenizer = BlenderbotSmallTokenizer.from_pretrained(
-            "facebook/blenderbot-90M"
+        return parser
+
+    model: ProphetNetForConditionalGeneration
+    tokenizer: ProphetNetTokenizer
+
+    def __init__(self, *args, **kwargs):
+        super(ProphetNetSummarizer, self).__init__()
+
+        self.save_hyperparameters()
+        print(self.hparams)
+
+        self.model = ProphetNetForConditionalGeneration.from_pretrained(
+            "microsoft/prophetnet-large-uncased-cnndm"
         )
+        self.tokenizer = ProphetNetTokenizer.from_pretrained(
+            "microsoft/prophetnet-large-uncased-cnndm"
+        )
+        # self.model.resize_token_embeddings(len(self.tokenizer))
 
     def forward(self, input):
         input_ids = input["input_ids"]
@@ -42,7 +56,7 @@ class BlenderbotSummarizer(pl.LightningModule):
     def generate_test(self, text, max_length=64, **kwargs):
         input = self.tokenizer(
             text,
-            max_length=512,
+            max_length=64,
             padding="max_length",
             truncation="longest_first",
             return_tensors="pt",
@@ -86,6 +100,7 @@ class BlenderbotSummarizer(pl.LightningModule):
             lr=self.hparams.learning_rate,
             eps=self.hparams.adam_epsilon,
         )
-        scheduler = get_linear_schedule_with_warmup(optimizer, 500, 5500)
+        return optimizer
+        # scheduler = get_linear_schedule_with_warmup(optimizer, 500, 5500)
 
-        return [optimizer], [scheduler]
+        # return [optimizer], [scheduler]

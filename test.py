@@ -1,16 +1,16 @@
 #%%
-from models.longformer import LongformerSummarizer
+from models.prophetnet import ProphetNetSummarizer
 
 # %%
 with open("input.txt", "r") as f:
     text = f.read()
 
 #%%
-model: LongformerSummarizer = LongformerSummarizer({})
-model.generate_test(text, max_length=1024)
+model: ProphetNetSummarizer = ProphetNetSummarizer()
+model.generate_test(text, max_length=512)
 
 #%%
-model: LongformerSummarizer = LongformerSummarizer.load_from_checkpoint(
-    "/workspaces/summarization-remote/lightning_logs/version_58/checkpoints/epoch=0.ckpt"
+model: ProphetNetSummarizer = ProphetNetSummarizer.load_from_checkpoint(
+    "/workspaces/summarization-remote/lightning_logs/version_86/checkpoints/epoch=1.ckpt"
 )
-model.generate_test(text, max_length=1024)
+model.generate_test(f"Summarize {text}", max_length=64)
