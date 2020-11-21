@@ -5,9 +5,9 @@ from pytorch_lightning import Trainer
 from summarization.data import BigPatentDataModule
 
 
-def freeze_params(model):
+def freeze_params(model, requires_grad=False):
     for par in model.parameters():
-        par.requires_grad = False
+        par.requires_grad = requires_grad
 
 
 def _get_model(model_name: str):

@@ -9,9 +9,8 @@ scorer = rouge_scorer.RougeScorer(["rouge1", "rougeL"], use_stemmer=True)
 #%%
 og_model: LongformerPegasusSummarizer = LongformerPegasusSummarizer()
 model: LongformerPegasusSummarizer = LongformerPegasusSummarizer.load_from_checkpoint(
-    "/workspaces/summarization-remote/lightning_logs/version_129/checkpoints/epoch=3.ckpt"
+    "/workspaces/summarization-remote/lightning_logs/version_137/checkpoints/epoch=1.ckpt"
 )
-d = BigPatentDataset.read_data("test", "a")
 
 og_model.cuda()
 model.cuda()
@@ -31,10 +30,14 @@ def generate_text(model, text):
         attention_mask=input["attention_mask"].cuda(),
         max_length=256,
         num_beams=1,
+        early_stopping=True,
     )
     return model.tokenizer.decode(beam_outputs[0], skip_special_tokens=True)
 
 
+#%%
+d = BigPatentDataset.read_data("test", "a")
+d
 # %%
 sample_data = next(d)
 

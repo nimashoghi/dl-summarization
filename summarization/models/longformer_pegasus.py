@@ -1,6 +1,7 @@
 from argparse import ArgumentParser
 from typing import Dict, List, Optional, Tuple
 
+import torch
 from summarization.models.base import SummarizerBase
 from summarization.util import freeze_params
 from torch import Tensor, nn
@@ -81,7 +82,7 @@ class LongformerSelfAttentionForPegasus(nn.Module):
                 0, 1
             ),  # LongformerSelfAttention expects (bsz, seqlen, embd_dim)
             # attention_mask=key_padding_mask.unsqueeze(dim=1).unsqueeze(dim=1) * -1,
-            attention_mask=((key_padding_mask) * 1),
+            attention_mask=torch.zeros_like(key_padding_mask),
         )
 
         attn_output = self.output(outputs[0].transpose(0, 1))
@@ -114,14 +115,16 @@ class LongformerPegasusSummarizer(SummarizerBase):
         kwargs_new.update(kwargs)
         super(LongformerPegasusSummarizer, self).__init__(*args, **kwargs_new)
 
-        if self.hparams.freeze_embeddings:
-            # freeze_params(self.model.model.encoder.embed_positions)
-            # freeze_params(self.model.model.encoder.embed_tokens)
+        freeze_params(self.model.model.decoder)
+        for i, layer in enumerate(self.model.model.encoder.layers):
+            if i == len(self.model.model.encoder.layers) - 1:
+                continue
+            freeze_params(layer)
 
-            for i, layer in enumerate(self.model.model.encoder.layers):
-                if i >= len(self.model.model.encoder.layers) - 1:
-                    continue
-                freeze_params(layer)
+    # def on_train_epoch_start(self) -> None:
+    #     index = random.randint(0, len(self.model.model.encoder.layers) - 1)
 
-        if self.hparams.freeze_decoder:
-            freeze_params(self.model.model.decoder)
+    #     for i, layer in enumerate(self.model.model.encoder.layers):
+    #         if i == index:
+    #             continue
+    #         freeze_params(layer, requires_grad=i == index)
