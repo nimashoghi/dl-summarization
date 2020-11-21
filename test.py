@@ -1,5 +1,5 @@
 if __name__ == "__main__":
-    from util import init_model_from_args
+    from summarization.util import init_model_from_args
 
     model, trainer, data = init_model_from_args()
 

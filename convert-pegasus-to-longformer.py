@@ -5,7 +5,7 @@ import os
 from transformers import PegasusForConditionalGeneration, PegasusTokenizer
 from transformers.modeling_bart import shift_tokens_right
 
-from models.longformer_pegasus import (
+from summarization.models.longformer_pegasus import (
     LongformerPegasusConfig,
     LongformerPegasusForConditionalGeneration,
     LongformerSelfAttentionForPegasus,
@@ -139,7 +139,7 @@ def main():
         help="attention window size for longformer self attention (one sided)",
     )
     parser.add_argument(
-        "--max_pos", type=int, default=4096, help="maximum encoder positions"
+        "--max_pos", type=int, default=8192, help="maximum encoder positions"
     )
     parser.add_argument(
         "--skip_create", action="store_true", help="skip create long model"

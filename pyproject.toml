@@ -11,6 +11,7 @@ pandas = "^1.1.4"
 pytorch-lightning = "^1.0.7"
 transformers = "^3.5.1"
 requests = "^2.25.0"
+rouge-score = "^0.0.4"
 
 [tool.poetry.dev-dependencies]
 

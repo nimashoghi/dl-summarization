@@ -1,26 +1,54 @@
 #%%
-from data import BigPatentDataset
-from models.longformer_pegasus import LongformerPegasusSummarizer
+from rouge_score import rouge_scorer
+
+from summarization.data import BigPatentDataset
+from summarization.models.longformer_pegasus import LongformerPegasusSummarizer
+
+scorer = rouge_scorer.RougeScorer(["rouge1", "rougeL"], use_stemmer=True)
+
+#%%
+og_model: LongformerPegasusSummarizer = LongformerPegasusSummarizer()
+model: LongformerPegasusSummarizer = LongformerPegasusSummarizer.load_from_checkpoint(
+    "/workspaces/summarization-remote/lightning_logs/version_129/checkpoints/epoch=3.ckpt"
+)
+d = BigPatentDataset.read_data("test", "a")
+
+og_model.cuda()
+model.cuda()
+
+#%%
+def generate_text(model, text):
+    input = model.tokenizer(
+        text,
+        max_length=4096,
+        padding="max_length",
+        truncation="longest_first",
+        return_attention_mask=True,
+        return_tensors="pt",
+    )
+    beam_outputs = model.generate(
+        input["input_ids"].cuda(),
+        attention_mask=input["attention_mask"].cuda(),
+        max_length=256,
+        num_beams=1,
+    )
+    return model.tokenizer.decode(beam_outputs[0], skip_special_tokens=True)
+
 
 # %%
-sample_data = next(BigPatentDataset.read_data("test", "a"))
+sample_data = next(d)
 
 description = sample_data["description"]
 abstract = sample_data["abstract"]
 abstract
 
 #%%
-model: LongformerPegasusSummarizer = LongformerPegasusSummarizer()
-dir(model.model.model.encoder)
+generated_og = generate_text(og_model, description)
+generated_og, abstract, scorer.score(abstract, generated_og)
 
 #%%
-model.generate_text(description)
+generated = generate_text(model, description)
+# generated = generated.split(" - ")[0]
+generated, abstract, scorer.score(abstract, generated)
 
-#%%
-abstract
-
-#%%
-model: LongformerPegasusSummarizer = LongformerPegasusSummarizer.load_from_checkpoint(
-    "/workspaces/summarization-remote/lightning_logs/version_86/checkpoints/epoch=1.ckpt"
-)
-model.generate_text(f"Summarize {text}", max_length=64)
+# %%

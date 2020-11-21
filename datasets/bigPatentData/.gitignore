@@ -1,0 +1,4 @@
+test/
+train/
+val/
+bigPatentData.tar.gz

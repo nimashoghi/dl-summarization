@@ -5,7 +5,7 @@ import os
 from transformers import BartForConditionalGeneration, BartTokenizer
 from transformers.modeling_bart import shift_tokens_right
 
-from models.longformer_pegasus import (
+from summarization.models.longformer_pegasus import (
     LongformerPegasusConfig,
     LongformerPegasusForConditionalGeneration,
     LongformerSelfAttentionForPegasus,
