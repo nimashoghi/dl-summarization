@@ -27,7 +27,7 @@ class SummarizerBase(LightningModule):
         pretrained_name: str,
         input_length=512,
         output_length=256,
-        beam_size=5,
+        beam_size=1,
         *args,
         **kwargs
     ):
@@ -61,10 +61,14 @@ class SummarizerBase(LightningModule):
             max_length=self.hparams.input_length,
             padding=PaddingStrategy.MAX_LENGTH,
             truncation=TruncationStrategy.LONGEST_FIRST,
+            return_attention_mask=True if self.hparams.return_attention_mask else False,
             return_tensors=TensorType.PYTORCH,
         )
         beam_outputs = self.generate(
             input["input_ids"],
+            attention_mask=input["attention_mask"]
+            if self.hparams.return_attention_mask
+            else None,
             max_length=self.hparams.output_length,
             num_beams=self.hparams.beam_size,
             **kwargs

@@ -18,7 +18,7 @@ class LongformerPegasusForConditionalGeneration(PegasusForConditionalGeneration)
             pass  # do nothing, use BertSelfAttention instead
         else:
             for i, layer in enumerate(self.model.encoder.layers):
-                layer.self_attn = LongformerSelfAttentionForBart(config, layer_id=i)
+                layer.self_attn = LongformerSelfAttentionForPegasus(config, layer_id=i)
 
 
 class LongformerPegasusConfig(PegasusConfig):
@@ -60,28 +60,27 @@ class LongformerSelfAttentionForPegasus(nn.Module):
     def forward(
         self,
         query,
+        *args,
         key: Optional[Tensor],
         key_padding_mask: Optional[Tensor] = None,
         layer_state: Optional[Dict[str, Optional[Tensor]]] = None,
-        attn_mask: Optional[Tensor] = None,
+        attention_mask: Optional[Tensor] = None,
         need_weights=False,
         output_attentions=False,
+        head_mask=None,
+        **kwargs
     ) -> Tuple[Tensor, Optional[Tensor]]:
 
         tgt_len, bsz, embed_dim = query.size()
         assert embed_dim == self.embed_dim
         assert list(query.size()) == [tgt_len, bsz, embed_dim]
-        assert attn_mask is None
 
         outputs = self.longformer_self_attn(
             query.transpose(
                 0, 1
             ),  # LongformerSelfAttention expects (bsz, seqlen, embd_dim)
-            attention_mask=key_padding_mask.unsqueeze(dim=1).unsqueeze(dim=1) * -1,
-            head_mask=None,
-            encoder_hidden_states=None,
-            encoder_attention_mask=None,
-            output_attentions=output_attentions,
+            # attention_mask=key_padding_mask.unsqueeze(dim=1).unsqueeze(dim=1) * -1,
+            attention_mask=((~key_padding_mask) * 1),
         )
 
         attn_output = self.output(outputs[0].transpose(0, 1))
@@ -99,9 +98,10 @@ class LongformerPegasusSummarizer(SummarizerBase):
         super(LongformerPegasusSummarizer, self).__init__(
             model_cls=LongformerPegasusForConditionalGeneration,
             tokenizer_cls=PegasusTokenizer,
-            pretrained_name="google/pegasus-big_patent",
+            pretrained_name="/workspaces/summarization-remote/converted-models/longformer-pegasus",
             input_length=8192,
             output_length=256,
+            return_attention_mask=True,
             *args,
             **kwargs
         )
