@@ -12,6 +12,8 @@ class PegasusSummarizer(SummarizerBase):
             model_cls=PegasusForConditionalGeneration,
             tokenizer_cls=PegasusTokenizer,
             pretrained_name="google/pegasus-big_patent",
+            input_length=1024,
+            output_length=256,
             *args,
             **kwargs
         )

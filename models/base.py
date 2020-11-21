@@ -20,7 +20,17 @@ class SummarizerBase(LightningModule):
         )
         return parser
 
-    def __init__(self, model_cls, tokenizer_cls, pretrained_name: str, *args, **kwargs):
+    def __init__(
+        self,
+        model_cls,
+        tokenizer_cls,
+        pretrained_name: str,
+        input_length=512,
+        output_length=256,
+        beam_size=5,
+        *args,
+        **kwargs
+    ):
         super(SummarizerBase, self).__init__()
 
         self.save_hyperparameters()
@@ -45,21 +55,18 @@ class SummarizerBase(LightningModule):
             return_dict=True,
         )
 
-    def generate_text(self, text, input_max_length=512, outupt_max_length=64, **kwargs):
+    def generate_text(self, text, **kwargs):
         input = self.tokenizer(
             text,
-            max_length=input_max_length,
+            max_length=self.hparams.input_length,
             padding=PaddingStrategy.MAX_LENGTH,
             truncation=TruncationStrategy.LONGEST_FIRST,
             return_tensors=TensorType.PYTORCH,
         )
         beam_outputs = self.generate(
             input["input_ids"],
-            max_length=outupt_max_length,
-            num_beams=5,
-            no_repeat_ngram_size=2,
-            num_return_sequences=5,
-            early_stopping=True,
+            max_length=self.hparams.output_length,
+            num_beams=self.hparams.beam_size,
             **kwargs
         )
         for i, beam_output in enumerate(beam_outputs):
