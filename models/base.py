@@ -86,6 +86,14 @@ class SummarizerBase(LightningModule):
         self.log("val_loss", output["loss"], on_step=True, on_epoch=True, prog_bar=True)
         return dict(val_loss=output["loss"])
 
+    def test_step(self, batch, batch_idx):
+        output = self(batch)
+
+        self.log(
+            "test_loss", output["loss"], on_step=True, on_epoch=True, prog_bar=True
+        )
+        return dict(test_loss=output["loss"])
+
     def configure_optimizers(self):
         optimizer = AdamW(
             self.model.parameters(),

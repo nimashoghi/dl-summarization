@@ -63,7 +63,7 @@ class BigPatentDataModule(pl.LightningDataModule):
                 self.datasets[split_type] = BigPatentDataset(split_type)
 
         if stage == "test" or stage is None:
-            for split_type in "test":
+            for split_type in ("test",):
                 self.datasets[split_type] = BigPatentDataset(split_type)
 
     def batch_collate(self, batch):
