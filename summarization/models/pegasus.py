@@ -4,6 +4,10 @@ from summarization.models.base import SummarizerBase
 
 
 class PegasusSummarizer(SummarizerBase):
+    @staticmethod
+    def add_model_specific_args(parent_parser):
+        return SummarizerBase.add_model_specific_args(parent_parser)
+
     model: PegasusForConditionalGeneration
     tokenizer: PegasusTokenizer
 

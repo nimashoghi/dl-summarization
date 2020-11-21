@@ -3,14 +3,21 @@ from argparse import ArgumentParser
 from pytorch_lightning import Trainer
 
 from summarization.data import BigPatentDataModule
-from summarization.models.longformer_pegasus import LongformerPegasusSummarizer
-from summarization.models.pegasus import PegasusSummarizer
+
+
+def freeze_params(model):
+    for par in model.parameters():
+        par.requires_grad = False
 
 
 def _get_model(model_name: str):
     if model_name == "pegasus":
+        from summarization.models.pegasus import PegasusSummarizer
+
         return PegasusSummarizer
     elif model_name == "longformer_pegasus":
+        from summarization.models.longformer_pegasus import LongformerPegasusSummarizer
+
         return LongformerPegasusSummarizer
     else:
         raise Exception(f"Model {model_name} not found!")
