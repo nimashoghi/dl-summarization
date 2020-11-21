@@ -2,7 +2,6 @@ import gzip
 import json
 import os
 from typing import Optional
-import itertools
 
 import pytorch_lightning as pl
 import torch.utils.data
@@ -14,7 +13,6 @@ from transformers.tokenization_utils_base import (
     TensorType,
     TruncationStrategy,
 )
-
 
 DATASET_DIR = "datasets/bigPatentData"
 CPC_CODES = ["a", "b", "c", "d", "e", "f", "g", "h", "y"]

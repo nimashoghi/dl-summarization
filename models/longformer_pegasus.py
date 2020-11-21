@@ -99,7 +99,7 @@ class LongformerPegasusSummarizer(SummarizerBase):
             model_cls=LongformerPegasusForConditionalGeneration,
             tokenizer_cls=PegasusTokenizer,
             pretrained_name="/workspaces/summarization-remote/converted-models/longformer-pegasus",
-            input_length=8192,
+            input_length=4096,
             output_length=256,
             return_attention_mask=True,
             *args,
