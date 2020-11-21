@@ -127,7 +127,7 @@ def main():
     )
     parser.add_argument(
         "--save_model_to",
-        default="./longformer-pegasus",
+        default="./converted-models/longformer-pegasus",
         type=str,
         # required=True,
         help="The path to save the converted model",

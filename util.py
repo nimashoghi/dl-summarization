@@ -19,11 +19,11 @@ def _get_model(model_name: str):
 def init_model_from_args():
     parser = ArgumentParser()
     parser.add_argument("model_name", default="pegasus", type=str, help="model name")
+    parser = Trainer.add_argparse_args(parser)
     args, _ = parser.parse_known_args()
 
     model_cls = _get_model(args.model_name)
 
-    parser = Trainer.add_argparse_args(parser)
     parser = model_cls.add_model_specific_args(parser)
     args = parser.parse_args()
 

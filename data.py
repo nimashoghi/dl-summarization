@@ -37,9 +37,7 @@ class BigPatentDataset(IterableDataset):
     def __iter__(self):
         assert self.cpc_code is not None
 
-        return itertools.islice(
-            iter(BigPatentDataset.read_data(self.split_type, self.cpc_code)), 250
-        )
+        return BigPatentDataset.read_data(self.split_type, self.cpc_code)
 
 
 class BigPatentDataModule(pl.LightningDataModule):

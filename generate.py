@@ -11,7 +11,7 @@ abstract
 
 #%%
 model: LongformerPegasusSummarizer = LongformerPegasusSummarizer()
-model.model.model.encoder
+dir(model.model.model.encoder)
 
 #%%
 model.generate_text(description)

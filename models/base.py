@@ -18,6 +18,7 @@ class SummarizerBase(LightningModule):
         parser.add_argument(
             "--learning_rate", "-lr", type=float, default=1.9054607179632464e-05
         )
+        parser.add_argument("--freeze_embeddings", type=bool, default=True)
         return parser
 
     def __init__(
@@ -34,10 +35,13 @@ class SummarizerBase(LightningModule):
         super(SummarizerBase, self).__init__()
 
         self.save_hyperparameters()
-        print(self.hparams)
 
         self.model = model_cls.from_pretrained(pretrained_name)
         self.tokenizer = tokenizer_cls.from_pretrained(pretrained_name)
+
+        if self.hparams.freeze_embeddings:
+            for param in self.model.model.encoder.embed_tokens.parameters():
+                param.requires_grad = False
 
     def forward(self, input):
         input_ids = input["input_ids"]
