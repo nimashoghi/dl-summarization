@@ -1,9 +1,4 @@
 from transformers import ProphetNetForConditionalGeneration, ProphetNetTokenizer
-from transformers.tokenization_utils_base import (
-    PaddingStrategy,
-    TensorType,
-    TruncationStrategy,
-)
 
 from models.base import SummarizerBase
 

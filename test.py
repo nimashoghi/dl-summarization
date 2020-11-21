@@ -1,16 +1,20 @@
-#%%
+from argparse import ArgumentParser
+
+from pytorch_lightning import Trainer
+
+from data import BigPatentDataModule
 from models.prophetnet import ProphetNetSummarizer
 
-# %%
-with open("input.txt", "r") as f:
-    text = f.read()
 
-#%%
-model: ProphetNetSummarizer = ProphetNetSummarizer()
-model.generate_test(text, max_length=512)
+if __name__ == "__main__":
+    parser = ArgumentParser()
+    parser = ProphetNetSummarizer.add_model_specific_args(parser)
+    parser = Trainer.add_argparse_args(parser)
+    args = parser.parse_args()
 
-#%%
-model: ProphetNetSummarizer = ProphetNetSummarizer.load_from_checkpoint(
-    "/workspaces/summarization-remote/lightning_logs/version_86/checkpoints/epoch=1.ckpt"
-)
-model.generate_test(f"Summarize {text}", max_length=64)
+    trainer = Trainer.from_argparse_args(args)
+
+    model = ProphetNetSummarizer(**vars(args))
+    data = BigPatentDataModule(model.tokenizer, batch_size=model.hparams.batch_size)
+
+    trainer.test(model, datamodule=data)
