@@ -107,8 +107,8 @@ class LongformerPegasusSummarizer(SummarizerBase):
         kwargs_new = dict(
             model_cls=LongformerPegasusForConditionalGeneration,
             tokenizer_cls=PegasusTokenizer,
-            pretrained_name="/workspaces/summarization-remote/dlt-summarization/converted-models/longformer-pegasus",
-            input_length=8192,
+            pretrained_name="/workspaces/summarization-remote/converted-models/longformer-pegasus",
+            input_length=6144,
             output_length=256,
             return_attention_mask=True,
         )

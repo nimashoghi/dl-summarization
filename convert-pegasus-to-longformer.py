@@ -135,11 +135,11 @@ def main():
     parser.add_argument(
         "--attention_window",
         type=int,
-        default=1024,
+        default=512,
         help="attention window size for longformer self attention (one sided)",
     )
     parser.add_argument(
-        "--max_pos", type=int, default=8192, help="maximum encoder positions"
+        "--max_pos", type=int, default=6144, help="maximum encoder positions"
     )
     parser.add_argument(
         "--skip_create", action="store_true", help="skip create long model"

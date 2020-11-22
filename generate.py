@@ -6,7 +6,9 @@ from summarization.data.tldr_legal import TLDRLegalDataset
 from summarization.models.longformer_pegasus import LongformerPegasusSummarizer
 from summarization.models.pegasus import PegasusSummarizer
 
-scorer = rouge_scorer.RougeScorer(["rouge1", "rougeL"], use_stemmer=True)
+scorer = rouge_scorer.RougeScorer(
+    ["rouge1", "rouge2", "rougeL", "rougeLsum"], use_stemmer=True
+)
 
 #%%
 og_model: PegasusSummarizer = PegasusSummarizer()
@@ -30,10 +32,10 @@ def generate_text(model, text, max_length=6144):
     beam_outputs = model.generate(
         input["input_ids"].cuda(),
         attention_mask=input["attention_mask"].cuda(),
-        max_length=256,
         num_beams=5,
-        repetition_penalty=5.0,
-        length_penalty=0.65,
+        max_length=256,
+        # repetition_penalty=5.0,
+        length_penalty=0.1,
         # num_return_sequences=3,
         # early_stopping=True,
     )
