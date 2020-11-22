@@ -76,33 +76,33 @@ def create_long_model(
     config.attention_dilation = [1] * config.num_hidden_layers
 
     for i, layer in enumerate(model.model.encoder.layers):
-        longformer_self_attn_for_Pegasus = LongformerSelfAttentionForPegasus(
+        longformer_self_attn_for_pegasus = LongformerSelfAttentionForPegasus(
             config, layer_id=i
         )
 
-        longformer_self_attn_for_Pegasus.longformer_self_attn.query = (
+        longformer_self_attn_for_pegasus.longformer_self_attn.query = (
             layer.self_attn.q_proj
         )
-        longformer_self_attn_for_Pegasus.longformer_self_attn.key = (
+        longformer_self_attn_for_pegasus.longformer_self_attn.key = (
             layer.self_attn.k_proj
         )
-        longformer_self_attn_for_Pegasus.longformer_self_attn.value = (
+        longformer_self_attn_for_pegasus.longformer_self_attn.value = (
             layer.self_attn.v_proj
         )
 
-        longformer_self_attn_for_Pegasus.longformer_self_attn.query_global = (
+        longformer_self_attn_for_pegasus.longformer_self_attn.query_global = (
             layer.self_attn.q_proj
         )
-        longformer_self_attn_for_Pegasus.longformer_self_attn.key_global = (
+        longformer_self_attn_for_pegasus.longformer_self_attn.key_global = (
             layer.self_attn.k_proj
         )
-        longformer_self_attn_for_Pegasus.longformer_self_attn.value_global = (
+        longformer_self_attn_for_pegasus.longformer_self_attn.value_global = (
             layer.self_attn.v_proj
         )
 
-        longformer_self_attn_for_Pegasus.output = layer.self_attn.out_proj
+        longformer_self_attn_for_pegasus.output = layer.self_attn.out_proj
 
-        layer.self_attn = longformer_self_attn_for_Pegasus
+        layer.self_attn = longformer_self_attn_for_pegasus
     logger.info(f"saving model to {save_model_to}")
     model.save_pretrained(save_model_to)
     tokenizer.save_pretrained(save_model_to)
