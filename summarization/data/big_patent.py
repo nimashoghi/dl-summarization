@@ -1,14 +1,12 @@
-import itertools
 import gzip
 import json
 import os
-from typing import List, Optional
+from typing import Optional
 
 import pytorch_lightning as pl
 import torch.utils.data
 from torch.utils.data import IterableDataset
 from torch.utils.data.dataloader import DataLoader
-from torch.utils.data.dataset import Dataset
 from transformers import AutoTokenizer
 from transformers.tokenization_utils_base import (
     PaddingStrategy,
@@ -40,27 +38,6 @@ class BigPatentDataset(IterableDataset):
         return iter(BigPatentDataset.read_data(self.split_type, self.cpc_code))
 
 
-class BigPatentRegularDataset(Dataset):
-    def __init__(self, split_type: str, cpc_codes: List[str], take_n=35):
-        base_path = os.path.join(DATASET_DIR, split_type)
-        file_paths = (
-            os.path.join(base_path, cpc_code, file_name)
-            for cpc_code in cpc_codes
-            for file_name in os.listdir(os.path.join(base_path, cpc_code))
-        )
-        self.content = [
-            json.loads(row)
-            for file_path in file_paths
-            for row in itertools.islice(iter(gzip.open(file_path, "r")), take_n)
-        ]
-
-    def __len__(self):
-        return len(self.content)
-
-    def __getitem__(self, index):
-        return self.content[index]
-
-
 class BigPatentDataModule(pl.LightningDataModule):
     def __init__(self, hparams, tokenizer: AutoTokenizer):
         super(BigPatentDataModule, self).__init__()
@@ -72,17 +49,11 @@ class BigPatentDataModule(pl.LightningDataModule):
     def setup(self, stage: Optional[str] = None):
         if stage == "fit" or stage is None:
             for split_type in ("train", "val"):
-                self.datasets[split_type] = BigPatentRegularDataset(
-                    split_type=split_type,
-                    cpc_codes=["a", "b"],
-                    take_n=15 if split_type == "val" else 35,
-                )
+                self.datasets[split_type] = BigPatentDataset(split_type)
 
-        if stage == "test":
+        if stage == "test" or stage is None:
             for split_type in ("test",):
-                self.datasets[split_type] = BigPatentRegularDataset(
-                    split_type=split_type, cpc_codes=["a", "b"]
-                )
+                self.datasets[split_type] = BigPatentDataset(split_type)
 
     def batch_collate(self, batch):
         input = self.tokenizer(
@@ -107,22 +78,22 @@ class BigPatentDataModule(pl.LightningDataModule):
             output_mask=output["attention_mask"],
         )
 
-    # def worker_init_fn(self, worker_id: int):
-    #     worker_info = torch.utils.data.get_worker_info()
-    #     if worker_info is None:
-    #         return
+    def worker_init_fn(self, worker_id: int):
+        worker_info = torch.utils.data.get_worker_info()
+        if worker_info is None:
+            return
 
-    #     dataset: BigPatentDataset = worker_info.dataset
-    #     dataset.cpc_code = CPC_CODES[worker_id]
+        dataset: BigPatentDataset = worker_info.dataset
+        dataset.cpc_code = CPC_CODES[worker_id]
 
     def make_dataloader(self, split_type: str):
         return DataLoader(
             self.datasets[split_type],
             batch_size=self.hparams.batch_size,
             collate_fn=self.batch_collate,
-            num_workers=2,
+            num_workers=len(CPC_CODES),
             pin_memory=True,
-            # worker_init_fn=self.worker_init_fn,
+            worker_init_fn=self.worker_init_fn,
         )
 
     def test_dataloader(self) -> DataLoader:

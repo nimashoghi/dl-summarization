@@ -12,6 +12,8 @@ pytorch-lightning = "^1.0.7"
 transformers = "^3.5.1"
 requests = "^2.25.0"
 rouge-score = "^0.0.4"
+ndjson = "^0.3.1"
+beautifulsoup4 = "^4.9.3"
 
 [tool.poetry.dev-dependencies]
 

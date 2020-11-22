@@ -2,7 +2,7 @@
 import torch
 from rouge_score import rouge_scorer
 
-from summarization.data import BigPatentDataset
+from summarization.data.tldr_legal import TLDRLegalDataset
 from summarization.models.longformer_pegasus import LongformerPegasusSummarizer
 from summarization.models.pegasus import PegasusSummarizer
 
@@ -31,11 +31,11 @@ def generate_text(model, text, max_length=6144):
         input["input_ids"].cuda(),
         attention_mask=input["attention_mask"].cuda(),
         max_length=256,
-        num_beams=3,
-        repetition_penalty=2.0,
-        length_penalty=0.85,
+        num_beams=5,
+        repetition_penalty=5.0,
+        length_penalty=0.65,
         # num_return_sequences=3,
-        early_stopping=True,
+        # early_stopping=True,
     )
     output = [
         model.tokenizer.decode(beam_output, skip_special_tokens=True)
@@ -45,14 +45,15 @@ def generate_text(model, text, max_length=6144):
 
 
 #%%
-d = BigPatentDataset.read_data("test", "a")
-d
-# %%
-import itertools
+from summarization.data.tldr_legal import TLDRLegalDataset
 
-sample_data = next(itertools.islice(d, 252, None))
-description = sample_data["description"]
-abstract = sample_data["abstract"]
+d = TLDRLegalDataset()
+i = iter(d)
+len(d)
+# %%
+sample_data = next(i)
+description = sample_data["description"].lower()
+abstract = sample_data["abstract"].lower()
 abstract
 
 #%%

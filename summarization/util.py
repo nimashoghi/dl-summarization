@@ -1,9 +1,12 @@
 from argparse import ArgumentParser
 
+from bs4 import BeautifulSoup
 from pytorch_lightning import Trainer
 from pytorch_lightning.callbacks import ModelCheckpoint
 
-from summarization.data import BigPatentDataModule
+
+def strip_html(text: str):
+    return BeautifulSoup(text).get_text()
 
 
 def freeze_params(model, requires_grad=False):
@@ -24,13 +27,30 @@ def _get_model(model_name: str):
         raise Exception(f"Model {model_name} not found!")
 
 
+def _get_datamodule(datamodule_name: str):
+    if datamodule_name == "big_patent":
+        from summarization.data.big_patent import BigPatentDataModule
+
+        return BigPatentDataModule
+    elif datamodule_name == "tldr_legal":
+        from summarization.data.tldr_legal import TLDRLegalDataModule
+
+        return TLDRLegalDataModule
+    else:
+        raise Exception(f"Datamodule {datamodule_name} not found!")
+
+
 def init_model_from_args():
     parser = ArgumentParser()
     parser.add_argument("model_name", default="pegasus", type=str, help="model name")
+    parser.add_argument(
+        "datamodule_name", default="big_patent", type=str, help="datamodule name"
+    )
     parser = Trainer.add_argparse_args(parser)
     args, _ = parser.parse_known_args()
 
     model_cls = _get_model(args.model_name)
+    datamodule_cls = _get_datamodule(args.datamodule_name)
 
     parser = model_cls.add_model_specific_args(parser)
     args = parser.parse_args()
@@ -43,6 +63,6 @@ def init_model_from_args():
         args, callbacks=[checkpoint_callback, checkpoint_callback2]
     )
     model = model_cls(**vars(args))
-    data = BigPatentDataModule(model.hparams, model.tokenizer)
+    data = datamodule_cls(model.hparams, model.tokenizer)
 
     return model, trainer, data
