@@ -42,9 +42,15 @@ def _get_datamodule(datamodule_name: str):
 
 def init_model_from_args():
     parser = ArgumentParser()
-    parser.add_argument("model_name", default="pegasus", type=str, help="model name")
     parser.add_argument(
-        "datamodule_name", default="big_patent", type=str, help="datamodule name"
+        "--model", default="pegasus", type=str, help="model name", dest="model_name"
+    )
+    parser.add_argument(
+        "--datamodule",
+        default="big_patent",
+        type=str,
+        help="datamodule name",
+        dest="datamodule_name",
     )
     parser = Trainer.add_argparse_args(parser)
     args, _ = parser.parse_known_args()

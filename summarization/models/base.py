@@ -22,9 +22,11 @@ class SummarizerBase(LightningModule):
 
     def __init__(
         self,
-        model_cls,
-        tokenizer_cls,
-        pretrained_name: str,
+        model_cls=None,
+        tokenizer_cls=None,
+        pretrained_name=None,
+        model=None,
+        tokenizer=None,
         input_length=512,
         output_length=256,
         beam_size=1,
@@ -35,8 +37,19 @@ class SummarizerBase(LightningModule):
 
         self.save_hyperparameters()
 
-        self.model = model_cls.from_pretrained(pretrained_name)
-        self.tokenizer = tokenizer_cls.from_pretrained(pretrained_name)
+        if model_cls is not None and pretrained_name is not None:
+            self.model = model_cls.from_pretrained(pretrained_name)
+        elif model is not None:
+            self.model = model
+        else:
+            raise Exception("no model")
+
+        if tokenizer_cls is not None and pretrained_name is not None:
+            self.tokenizer = tokenizer_cls.from_pretrained(pretrained_name)
+        elif tokenizer is not None:
+            self.tokenizer = tokenizer
+        else:
+            raise Exception("no tokenizer")
 
     def forward(self, input):
         input_ids = input["input_ids"]
