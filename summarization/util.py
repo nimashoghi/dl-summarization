@@ -1,6 +1,7 @@
 from argparse import ArgumentParser
 
 from pytorch_lightning import Trainer
+from pytorch_lightning.callbacks import ModelCheckpoint
 
 from summarization.data import BigPatentDataModule
 
@@ -34,7 +35,13 @@ def init_model_from_args():
     parser = model_cls.add_model_specific_args(parser)
     args = parser.parse_args()
 
-    trainer = Trainer.from_argparse_args(args)
+    checkpoint_callback = ModelCheckpoint(dirpath="./checkpoints/", save_last=True)
+    checkpoint_callback2 = ModelCheckpoint(
+        dirpath="./checkpoints-best/", save_top_k=2, monitor="val_loss"
+    )
+    trainer = Trainer.from_argparse_args(
+        args, callbacks=[checkpoint_callback, checkpoint_callback2]
+    )
     model = model_cls(**vars(args))
     data = BigPatentDataModule(model.hparams, model.tokenizer)
 
