@@ -1,4 +1,5 @@
 #%%
+import torch
 from rouge_score import rouge_scorer
 
 from summarization.data import BigPatentDataset
@@ -9,7 +10,7 @@ scorer = rouge_scorer.RougeScorer(["rouge1", "rougeL"], use_stemmer=True)
 #%%
 og_model: LongformerPegasusSummarizer = LongformerPegasusSummarizer()
 model: LongformerPegasusSummarizer = LongformerPegasusSummarizer.load_from_checkpoint(
-    "/workspaces/summarization-remote/lightning_logs/version_137/checkpoints/epoch=1.ckpt"
+    "/workspaces/summarization-remote/lightning_logs/version_146/checkpoints/epoch=5-v0.ckpt"
 )
 
 og_model.cuda()
@@ -29,10 +30,17 @@ def generate_text(model, text):
         input["input_ids"].cuda(),
         attention_mask=input["attention_mask"].cuda(),
         max_length=256,
-        num_beams=1,
+        num_beams=5,
+        repetition_penalty=2.0,
+        length_penalty=0.5,
+        # num_return_sequences=3,
         early_stopping=True,
     )
-    return model.tokenizer.decode(beam_outputs[0], skip_special_tokens=True)
+    output = [
+        model.tokenizer.decode(beam_output, skip_special_tokens=True)
+        for beam_output in beam_outputs
+    ]
+    return output[0]
 
 
 #%%
