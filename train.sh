@@ -1,3 +1,3 @@
 #!/bin/bash
 
-python train.py longformer_pegasus --gpus -1 --accelerator ddp --terminate_on_nan --batch_size 1 --limit_train_batches 256 --limit_val_batches 32 --val_check_interval 128 --accumulate_grad_batches 16
+python train.py longformer_pegasus --tpu_cores 8 --terminate_on_nan --batch_size 1 --limit_train_batches 256 --limit_val_batches 32 --val_check_interval 128 --accumulate_grad_batches 16 --precision 16

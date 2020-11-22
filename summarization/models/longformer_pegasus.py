@@ -82,7 +82,7 @@ class LongformerSelfAttentionForPegasus(nn.Module):
                 0, 1
             ),  # LongformerSelfAttention expects (bsz, seqlen, embd_dim)
             # attention_mask=key_padding_mask.unsqueeze(dim=1).unsqueeze(dim=1) * -1,
-            attention_mask=torch.zeros_like(key_padding_mask),
+            attention_mask=(~key_padding_mask) * 1,
         )
 
         attn_output = self.output(outputs[0].transpose(0, 1))
@@ -107,8 +107,8 @@ class LongformerPegasusSummarizer(SummarizerBase):
         kwargs_new = dict(
             model_cls=LongformerPegasusForConditionalGeneration,
             tokenizer_cls=PegasusTokenizer,
-            pretrained_name="/workspaces/summarization-remote/converted-models/longformer-pegasus",
-            input_length=6144,
+            pretrained_name="/workspaces/summarization-remote/dlt-summarization/converted-models/longformer-pegasus",
+            input_length=8192,
             output_length=256,
             return_attention_mask=True,
         )
@@ -116,10 +116,10 @@ class LongformerPegasusSummarizer(SummarizerBase):
         super(LongformerPegasusSummarizer, self).__init__(*args, **kwargs_new)
 
         freeze_params(self.model.model.decoder)
-        for i, layer in enumerate(self.model.model.encoder.layers):
-            if i == len(self.model.model.encoder.layers) - 1:
-                continue
-            freeze_params(layer)
+        # for i, layer in enumerate(self.model.model.encoder.layers):
+        #     if i == len(self.model.model.encoder.layers) - 1:
+        #         continue
+        #     freeze_params(layer)
 
     # def on_train_epoch_start(self) -> None:
     #     index = random.randint(0, len(self.model.model.encoder.layers) - 1)
