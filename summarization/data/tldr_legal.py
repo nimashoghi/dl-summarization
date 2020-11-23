@@ -3,7 +3,7 @@ from typing import Optional
 import ndjson
 import pytorch_lightning as pl
 from summarization.util import strip_html
-from torch.utils.data import Dataset
+from torch.utils.data import Dataset, random_split
 from torch.utils.data.dataloader import DataLoader
 from transformers import AutoTokenizer
 from transformers.tokenization_utils_base import (
@@ -11,6 +11,7 @@ from transformers.tokenization_utils_base import (
     TensorType,
     TruncationStrategy,
 )
+
 
 DATASET_PATH = (
     "/workspaces/summarization-remote/datasets/tldr-legal/tldr-legal-info.ndjson"
@@ -26,14 +27,29 @@ def get_content(item):
             for point in summary[key]:
                 try:
                     description = point["description"]
-                    summary_text += f" {description}"
                 except KeyError:
                     title = point["attribute"]["title"].lower()
+                    if "description" in point["attribute"]:
+                        attribute_description = point["attribute"][
+                            "description"
+                        ].lower()
+                        title += f" ({attribute_description})"
                     description = f"You {key} {title}."
+
+                summary_text += f" {description}"
     except:
         return None
 
-    return dict(description=strip_html(text), abstract=strip_html(summary_text))
+    return_value = dict(description=strip_html(text), abstract=strip_html(summary_text))
+
+    return (
+        return_value
+        if return_value["description"]
+        and return_value["abstract"]
+        and len(return_value["description"]) > 32
+        and len(return_value["abstract"]) > 8
+        else None
+    )
 
 
 class TLDRLegalDataset(Dataset):
@@ -61,13 +77,12 @@ class TLDRLegalDataModule(pl.LightningDataModule):
         self.datasets = dict()
 
     def setup(self, stage: Optional[str] = None):
-        if stage == "fit" or stage is None:
-            for split_type in ("train", "val"):
-                self.datasets[split_type] = TLDRLegalDataset(split_type)
-
-        if stage == "test" or stage is None:
-            for split_type in ("test",):
-                self.datasets[split_type] = TLDRLegalDataset(split_type)
+        dataset = TLDRLegalDataset()
+        (
+            self.datasets["train"],
+            self.datasets["val"],
+            self.datasets["test"],
+        ) = random_split(dataset, [176, 30, 29])
 
     def batch_collate(self, batch):
         input = self.tokenizer(

@@ -2,18 +2,19 @@
 import torch
 from rouge_score import rouge_scorer
 
+from summarization.data.big_patent import BigPatentDataset
 from summarization.data.tldr_legal import TLDRLegalDataset
 from summarization.models.longformer_pegasus import LongformerPegasusSummarizer
 from summarization.models.pegasus import PegasusSummarizer
 
-scorer = rouge_scorer.RougeScorer(
-    ["rouge1", "rouge2", "rougeL", "rougeLsum"], use_stemmer=True
-)
+scorer = rouge_scorer.RougeScorer(["rouge1", "rouge2", "rougeL"], use_stemmer=True)
+
 
 #%%
 og_model: PegasusSummarizer = PegasusSummarizer()
 model: LongformerPegasusSummarizer = LongformerPegasusSummarizer.load_from_checkpoint(
-    "/workspaces/summarization-remote/lightning_logs/version_147/checkpoints/epoch=6.ckpt"
+    "/workspaces/summarization-remote/checkpoints-tldr/checkpoints/last.ckpt",
+    # "/workspaces/summarization-remote/checkpoints-best/epoch=80.ckpt",
 )
 
 og_model.cuda()
@@ -32,12 +33,12 @@ def generate_text(model, text, max_length=6144):
     beam_outputs = model.generate(
         input["input_ids"].cuda(),
         attention_mask=input["attention_mask"].cuda(),
-        num_beams=5,
         max_length=256,
-        # repetition_penalty=5.0,
-        length_penalty=0.1,
+        num_beams=5,
+        repetition_penalty=2.0,
+        # length_penalty=0.85,
         # num_return_sequences=3,
-        # early_stopping=True,
+        early_stopping=True,
     )
     output = [
         model.tokenizer.decode(beam_output, skip_special_tokens=True)
@@ -47,15 +48,16 @@ def generate_text(model, text, max_length=6144):
 
 
 #%%
-from summarization.data.tldr_legal import TLDRLegalDataset
-
-d = TLDRLegalDataset()
-i = iter(d)
-len(d)
+# d = BigPatentDataset.read_data("test", "a")
+# d
+d = iter(TLDRLegalDataset())
 # %%
-sample_data = next(i)
-description = sample_data["description"].lower()
-abstract = sample_data["abstract"].lower()
+import itertools
+
+sample_data = next(d)
+
+description = sample_data["description"]
+abstract = sample_data["abstract"]
 abstract
 
 #%%

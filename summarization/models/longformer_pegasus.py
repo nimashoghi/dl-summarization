@@ -116,8 +116,13 @@ class LongformerPegasusSummarizer(SummarizerBase):
         super(LongformerPegasusSummarizer, self).__init__(*args, **kwargs_new)
 
         freeze_params(self.model.model.decoder)
-        # for i, layer in enumerate(self.model.model.encoder.layers):
-        #     if i == len(self.model.model.encoder.layers) - 1:
+        for i, layer in enumerate(self.model.model.encoder.layers):
+            if i == len(self.model.model.encoder.layers) - 1:
+                continue
+            freeze_params(layer)
+
+        # for i, layer in enumerate(self.model.model.decoder.layers):
+        #     if i == len(self.model.model.decoder.layers) - 1:
         #         continue
         #     freeze_params(layer)
 

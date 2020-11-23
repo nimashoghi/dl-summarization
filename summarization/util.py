@@ -3,10 +3,22 @@ from argparse import ArgumentParser
 from bs4 import BeautifulSoup
 from pytorch_lightning import Trainer
 from pytorch_lightning.callbacks import ModelCheckpoint
+import string
+
+printable = set(string.printable)
 
 
-def strip_html(text: str):
-    return BeautifulSoup(text).get_text()
+def strip_html(text: str, cleanup=True):
+    text = BeautifulSoup(text).get_text()
+
+    if cleanup:
+        global printable
+
+        text = "".join(filter(lambda x: x in printable, text))
+        text = text.replace("\n", " ")
+        return text
+
+    return text
 
 
 def freeze_params(model, requires_grad=False):
