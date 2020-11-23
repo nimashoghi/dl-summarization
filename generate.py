@@ -1,9 +1,7 @@
 #%%
-import torch
 from rouge_score import rouge_scorer
 
 from summarization.data.big_patent import BigPatentDataset
-from summarization.data.tldr_legal import TLDRLegalDataset
 from summarization.models.longformer_pegasus import LongformerPegasusSummarizer
 from summarization.models.pegasus import PegasusSummarizer
 
@@ -13,8 +11,8 @@ scorer = rouge_scorer.RougeScorer(["rouge1", "rouge2", "rougeL"], use_stemmer=Tr
 #%%
 og_model: PegasusSummarizer = PegasusSummarizer()
 model: LongformerPegasusSummarizer = LongformerPegasusSummarizer.load_from_checkpoint(
-    "/workspaces/summarization-remote/checkpoints-tldr/checkpoints/last.ckpt",
-    # "/workspaces/summarization-remote/checkpoints-best/epoch=80.ckpt",
+    # "/workspaces/summarization-remote/checkpoints-tldr/checkpoints/last.ckpt",
+    "/workspaces/summarization-remote/checkpoints-bigpatent/checkpoints-best/epoch=80.ckpt"
 )
 
 og_model.cuda()
@@ -35,7 +33,7 @@ def generate_text(model, text, max_length=6144):
         attention_mask=input["attention_mask"].cuda(),
         max_length=256,
         num_beams=5,
-        repetition_penalty=2.0,
+        repetition_penalty=5.0,
         # length_penalty=0.85,
         # num_return_sequences=3,
         early_stopping=True,
@@ -48,9 +46,9 @@ def generate_text(model, text, max_length=6144):
 
 
 #%%
-# d = BigPatentDataset.read_data("test", "a")
-# d
-d = iter(TLDRLegalDataset())
+d = BigPatentDataset.read_data("test", "a")
+d
+# d = iter(TLDRLegalDataset())
 # %%
 import itertools
 
@@ -71,6 +69,9 @@ generated, scorer.score(abstract, generated)
 # %%
 import itertools
 
+
+runs_og = []
+runs_us = []
 sum_og = {}
 sum_us = {}
 count = 0
@@ -80,21 +81,49 @@ for sample_data in itertools.islice(d, 100):
     description = sample_data["description"]
     abstract = sample_data["abstract"]
     generated = generate_text(og_model, description, max_length=1024)
-    for metric, value in scorer.score(abstract, generated).items():
+
+    info = dict(abstract_length=len(abstract), description_length=len(description))
+
+    metrics = scorer.score(abstract, generated)
+    runs_og.append(
+        dict(
+            **info,
+            metrics=metrics,
+            generated_length=len(generated),
+        )
+    )
+    for metric, value in metrics.items():
         if metric not in sum_og:
             sum_og[metric] = 0
 
         sum_og[metric] += value.fmeasure
 
     generated = generate_text(model, description)
-    for metric, value in scorer.score(abstract, generated).items():
+    metrics = scorer.score(abstract, generated)
+    runs_us.append(
+        dict(
+            **info,
+            metrics=metrics,
+            generated_length=len(generated),
+        )
+    )
+    for metric, value in metrics.items():
         if metric not in sum_us:
             sum_us[metric] = 0
 
         sum_us[metric] += value.fmeasure
 
+    print(".", end="")
+
 #%%
-for metric in set(*sum_og.keys(), *sum_us.keys()):
+for metric in set([*sum_og.keys(), *sum_us.keys()]):
     average_us = sum_us[metric] / count
     average_og = sum_og[metric] / count
     print(f"[{metric}]: {average_us} us vs. {average_og} them")
+
+#%%
+data = dict(sum_og=sum_og, sum_us=sum_us, count=count, runs_og=runs_og, runs_us=runs_us)
+import pickle
+
+with open("data.bin", "wb") as f:
+    pickle.dump(data, f)

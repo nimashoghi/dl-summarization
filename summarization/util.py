@@ -73,9 +73,14 @@ def init_model_from_args():
     parser = model_cls.add_model_specific_args(parser)
     args = parser.parse_args()
 
-    checkpoint_callback = ModelCheckpoint(dirpath="./checkpoints/", save_last=True)
+    checkpoint_callback = ModelCheckpoint(
+        dirpath=f"./checkpoints-{args.model_name}-{args.datamodule_name}/",
+        save_last=True,
+    )
     checkpoint_callback2 = ModelCheckpoint(
-        dirpath="./checkpoints-best/", save_top_k=2, monitor="val_loss"
+        dirpath=f"./checkpoints-best-{args.model_name}-{args.datamodule_name}/",
+        save_top_k=2,
+        monitor="val_loss",
     )
     trainer = Trainer.from_argparse_args(
         args, callbacks=[checkpoint_callback, checkpoint_callback2]
