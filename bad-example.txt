@@ -1,0 +1,20 @@
+ideal: 'an electronic package includes a circuit board and a capsule layer encasing the circuit board and forming an immersible electronic module . a housing receives the electronic module and forms a protective shell around the electronic module .'
+
+
+
+
+pegasus:
+('A brake stroke monitor assembly includes a sensor module having an electronic assembly embedded in a protective capsule layer, and a module housing which is attached to the sensor module.',
+ {'rouge1': Score(precision=0.5333333333333333, recall=0.4444444444444444, fmeasure=0.4848484848484848),
+  'rouge2': Score(precision=0.1724137931034483, recall=0.14285714285714285, fmeasure=0.15625),
+  'rougeL': Score(precision=0.3333333333333333, recall=0.2777777777777778, fmeasure=0.303030303030303)})
+[102]
+
+
+
+
+us:
+('a system for monitoring the wear of a vehicle brake assembly includes a sensor module having an electronic assembly embedded in a protective capsule layer, and a mounting bracket adapted to be secured to the vehicle brake assembly. the housing is configured to receive the sensor module therein with press - fit engagement such that the electronic assembly is positioned at a predetermined location relative to the positioning bracket. when the device is installed on the vehicle, the position of the locating bracket may be readily adjusted so as to provide local visual indication of brake wear while the electronic assembly provides remote indication of brake wear.',
+ {'rouge1': Score(precision=0.18867924528301888, recall=0.5555555555555556, fmeasure=0.28169014084507044),
+  'rouge2': Score(precision=0.0761904761904762, recall=0.22857142857142856, fmeasure=0.11428571428571427),
+  'rougeL': Score(precision=0.1320754716981132, recall=0.3888888888888889, fmeasure=0.19718309859154928)})
