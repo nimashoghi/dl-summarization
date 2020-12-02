@@ -102,3 +102,16 @@ class LongformerPegasusSummarizer(SummarizerBase):
             if i == len(self.model.model.encoder.layers) - 1:
                 continue
             freeze_params(layer)
+
+        # for i, layer in enumerate(self.model.model.decoder.layers):
+        #     if i == len(self.model.model.decoder.layers) - 1:
+        #         continue
+        #     freeze_params(layer)
+
+    # def on_train_epoch_start(self) -> None:
+    #     index = random.randint(0, len(self.model.model.encoder.layers) - 1)
+
+    #     for i, layer in enumerate(self.model.model.encoder.layers):
+    #         if i == index:
+    #             continue
+    #         freeze_params(layer, requires_grad=i == index)

@@ -73,14 +73,12 @@ class SummarizerBase(LightningModule):
             max_length=self.hparams.input_length,
             padding=PaddingStrategy.MAX_LENGTH,
             truncation=TruncationStrategy.LONGEST_FIRST,
-            return_attention_mask=True if self.hparams.return_attention_mask else False,
+            return_attention_mask=True,
             return_tensors=TensorType.PYTORCH,
         )
         beam_outputs = self.generate(
             input["input_ids"],
-            attention_mask=input["attention_mask"]
-            if self.hparams.return_attention_mask
-            else None,
+            attention_mask=input["attention_mask"],
             max_length=self.hparams.output_length,
             num_beams=self.hparams.beam_size,
             **kwargs

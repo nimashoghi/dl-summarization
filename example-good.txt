@@ -1,0 +1,27 @@
+[79]
+
+
+
+
+import itertools...
+'an apparatus and method for constraining an amplitude range parameter associated with the acquisition and display of a signal under test acquires samples of the sut that are constrained according to the amplitude range parameter to generate a stream of acquired samples representing a constrained sut . a controller generates a display signal suitable for use by a display device that includes constrained sut waveform imagery visually cooperating with amplitude segment delineators . the controller adapts the number of amplitude segment delineators in response to the amplitude range parameter .'
+[80]
+
+
+
+
+generated_og = generate_text(og_model, description, max_length=1024, device="cuda:0")...
+('The invention enables the management amplitude parameters in conjunction with display parameters in a manner facilitating both control and ease of use. The invention as applied to, for example, a dso enables more intuitive user interaction and simplified maintenance and design of the dso.',
+ {'rouge1': Score(precision=0.45454545454545453, recall=0.22988505747126436, fmeasure=0.3053435114503817),
+  'rouge2': Score(precision=0.023255813953488372, recall=0.011627906976744186, fmeasure=0.015503875968992246),
+  'rougeL': Score(precision=0.2727272727272727, recall=0.13793103448275862, fmeasure=0.18320610687022898)})
+[81]
+
+
+
+
+generated = generate_text(model, description, device="cuda:1")...
+('a signal acquisition system and method are provided for displaying waveforms on a display device. the signal acquisition system includes an analog - to - digital converter adapted to receive signals under test from a user input device and convert the received signals into electrical signals. a processing and display controller is coupled to the analog - to - digital converter. the processing and display controller is configured to control operation of the analog - to - digital converter in accordance with at least one of a plurality of operating parameters associated with the signal acquisition system.',
+ {'rouge1': Score(precision=0.4725274725274725, recall=0.4942528735632184, fmeasure=0.4831460674157303),
+  'rouge2': Score(precision=0.14444444444444443, recall=0.1511627906976744, fmeasure=0.1477272727272727),
+  'rougeL': Score(precision=0.18681318681318682, recall=0.19540229885057472, fmeasure=0.1910112359550562)})

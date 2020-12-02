@@ -177,4 +177,4 @@ dmypy.json
 
 lightning_logs/
 checkpoints/
-checkpoints-best/
+checkpoints-*/

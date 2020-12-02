@@ -1,0 +1,19 @@
+ground truth:
+'each cylinder is provided with a first intake valve and a second intake valve , and a first intake cam for driving the first intake valve and a second intake cam for driving the second intake valve are coaxially pivotally supported on an intake camshaft . a first cam phase change mechanism which varies respective phases of the first and second intake cams relative to a crankshaft of the internal combustion engine is combined with a second cam phase change mechanism which varies a phase of the second intake cam relative to the first intake cam . the second cam phase change mechanism is set to have a variable - phase angular range wider than that of the first cam phase change mechanism .'
+
+
+pegasus:
+('An intake camshaft for an internal combustion engine includes a first intake camshaft and a second intake camshaft inserted in the first intake camshaft. A cam portion of the second intake camshaft is pivotably supported on the first intake camshaft.',
+ {'rouge1': Score(precision=0.75, recall=0.25210084033613445, fmeasure=0.3773584905660377),
+  'rouge2': Score(precision=0.48717948717948717, recall=0.16101694915254236, fmeasure=0.24203821656050956),
+  'rougeL': Score(precision=0.525, recall=0.17647058823529413, fmeasure=0.2641509433962264)})
+[105]
+
+
+
+us:
+('a variable valve gear for an internal combustion engine is provided. the variable valve gear includes a first cam phase change mechanism and a second cam phase change mechanism. the first cam phase change mechanism includes a first intake camshaft and a first intake cam fixed to the first intake camshaft. the second cam phase change mechanism includes a second intake camshaft and a second intake cam fixed to the second intake camshaft.',
+ {'rouge1': Score(precision=0.8493150684931506, recall=0.5210084033613446, fmeasure=0.6458333333333334),
+  'rouge2': Score(precision=0.6111111111111112, recall=0.3728813559322034, fmeasure=0.4631578947368421),
+  'rougeL': Score(precision=0.4657534246575342, recall=0.2857142857142857, fmeasure=0.3541666666666667)})
+[106]
