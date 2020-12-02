@@ -1,5 +1,19 @@
 # Hand-Picked Examples
 
+## Table of Contents
+- [Hand-Picked Examples](#hand-picked-examples)
+  - [Table of Contents](#table-of-contents)
+  - [Baby Bottle Bib](#baby-bottle-bib)
+    - [Patent Description](#patent-description)
+    - [Ground Truth Abstract](#ground-truth-abstract)
+    - [PEGASUS Abstract (R1 = 0.33; RL = 0.22)](#pegasus-abstract-r1--033-rl--022)
+    - [Our Abstract (R1 = 0.34; RL = 0.21)](#our-abstract-r1--034-rl--021)
+  - [Implantable MRI Compatible Medical Lead](#implantable-mri-compatible-medical-lead)
+    - [Patent Description](#patent-description-1)
+    - [Ground Truth Abstract](#ground-truth-abstract-1)
+    - [PEGASUS Generated Abstract (R1 = 0.17; RL = 0.14)](#pegasus-generated-abstract-r1--017-rl--014)
+    - [Our Abstract (R1 = 0.57; RL = 0.33)](#our-abstract-r1--057-rl--033)
+
 ## Baby Bottle Bib
 ### Patent Description
 <details>

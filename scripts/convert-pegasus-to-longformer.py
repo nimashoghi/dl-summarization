@@ -1,18 +1,11 @@
 import argparse
-import logging
 import os
-
-from transformers import PegasusForConditionalGeneration, PegasusTokenizer
-from transformers.modeling_bart import shift_tokens_right
 
 from summarization.models.longformer_pegasus import (
     LongformerPegasusConfig,
-    LongformerPegasusForConditionalGeneration,
     LongformerSelfAttentionForPegasus,
 )
-
-logger = logging.getLogger(__name__)
-logging.basicConfig(level=logging.INFO)
+from transformers import PegasusForConditionalGeneration, PegasusTokenizer
 
 
 def create_long_model(
@@ -51,7 +44,6 @@ def create_long_model(
     new_encoder_pos_embed = model.model.encoder.embed_positions.weight.new_empty(
         max_pos, embed_size
     )
-    # copy position embeddings over and over to initialize the new position embeddings
     k = N
     step = current_max_pos - N
     while k < max_pos - 1:
@@ -61,17 +53,6 @@ def create_long_model(
         k += step
     model.model.encoder.embed_positions.weight.data = new_encoder_pos_embed
 
-    # allocate a larger position embedding matrix for the decoder
-    # new_decoder_pos_embed = model.model.decoder.embed_positions.weight.new_empty(max_pos, embed_size)
-    # # copy position embeddings over and over to initialize the new position embeddings
-    # k = 2
-    # step = current_max_pos - 2
-    # while k < max_pos - 1:
-    #     new_decoder_pos_embed[k:(k + step)] = model.model.decoder.embed_positions.weight[2:]
-    #     k += step
-    # model.model.decoder.embed_positions.weight.data = new_decoder_pos_embed
-
-    # replace the `modeling_Pegasus.SelfAttention` object with `LongformerSelfAttention`
     config.attention_window = [attention_window] * config.num_hidden_layers
     config.attention_dilation = [1] * config.num_hidden_layers
 
@@ -103,7 +84,7 @@ def create_long_model(
         longformer_self_attn_for_pegasus.output = layer.self_attn.out_proj
 
         layer.self_attn = longformer_self_attn_for_pegasus
-    logger.info(f"saving model to {save_model_to}")
+    print(f"saving model to {save_model_to}")
     model.save_pretrained(save_model_to)
     tokenizer.save_pretrained(save_model_to)
     return model, tokenizer
@@ -150,37 +131,14 @@ def main():
     if not os.path.exists(args.save_model_to):
         os.mkdir(args.save_model_to)
 
-    if not args.skip_create:
-        create_long_model(
-            save_model_to=args.save_model_to,
-            base_model=args.base_model,
-            tokenizer_name_or_path=args.tokenizer_name_or_path,
-            attention_window=args.attention_window,
-            max_pos=args.max_pos,
-        )
-
-    tokenizer = PegasusTokenizer.from_pretrained(args.save_model_to)
-    TXT = "My friends are <mask> but they eat too many carbs."
-    model = LongformerPegasusForConditionalGeneration.from_pretrained(
-        args.save_model_to
+    model, _ = create_long_model(
+        save_model_to=args.save_model_to,
+        base_model=args.base_model,
+        tokenizer_name_or_path=args.tokenizer_name_or_path,
+        attention_window=args.attention_window,
+        max_pos=args.max_pos,
     )
     print(model)
-    data = tokenizer(
-        [TXT], return_tensors="pt", padding="max_length", max_length=4096 * 2
-    )
-    input_ids = data["input_ids"]
-    attention_mask = data["attention_mask"]
-    decoder_input_ids = shift_tokens_right(input_ids[:, :5], tokenizer.pad_token_id)
-    logits = model(
-        input_ids,
-        attention_mask=attention_mask,
-        decoder_input_ids=decoder_input_ids,
-        use_cache=False,
-    )[0]
-    masked_index = (input_ids[0] == tokenizer.mask_token_id).nonzero().item()
-    probs = logits[0, masked_index].softmax(dim=0)
-    values, predictions = probs.topk(5)
-    print(tokenizer.convert_ids_to_tokens(predictions))
 
 
 if __name__ == "__main__":
