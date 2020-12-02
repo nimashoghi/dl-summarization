@@ -7,6 +7,8 @@
   - [Converting Pretrained PEGASUS to PEGASUS-Longformer](#converting-pretrained-pegasus-to-pegasus-longformer)
   - [Fine-Tuning (Training)](#fine-tuning-training)
   - [Finding the Best Learning Rate](#finding-the-best-learning-rate)
+  - [Finding the Highest Supported Batch Size](#finding-the-highest-supported-batch-size)
+  - [Evaluating Your Model Against PEGASUS](#evaluating-your-model-against-pegasus)
   - [Hand-Picked Examples](#hand-picked-examples)
 
 ## Clone the Project
@@ -177,8 +179,38 @@ optional arguments:
   --automatic_optimization [AUTOMATIC_OPTIMIZATION]
                         If False you are responsible for calling .backward, .step, zero_grad. Meant to be used with multiple optimizers by advanced users.
 ```
+
 ## Finding the Best Learning Rate
-To find the best learning rate for a specific network, append the `--auto_lr_find` flag to your the training command as shown above. Then, the trainer will try progressively increasing the learning rate until it finds the optimal one.
+To find the best learning rate for a specific network, append the `--auto_lr_find` flag to your the training command from above. Then, the trainer will try progressively increasing the learning rate until it finds the optimal one.
+
+## Finding the Highest Supported Batch Size
+To find the highest batch size that will still fit in your GPU memory during training, append the `--auto_scale_batch_size binsearch` flag to your training command from above. This will use a binary search algorithm to find the most optimal batch size for training.
+
+## Evaluating Your Model Against PEGASUS
+To evaluate your model and compare it to PEGASUS results, run the `evaluate.py` script. See the example below:
+```bash
+python evaluate.py --longformer_pegasus_checkpoint ./checkpoints-bigpatent/checkpoints-best/epoch=78.ckpt --pegasus_pretrained_model google/pegasus-big_patent --random-seed 25
+```
+
+You may pass the following parameters to this script:
+```
+usage: evaluate.py [-h] [--longformer_pegasus_checkpoint LONGFORMER_PEGASUS_CHECKPOINT] [--pegasus_pretrained_model PEGASUS_PRETRAINED_MODEL] [--random_seed RANDOM_SEED] [--num_samples NUM_SAMPLES]
+                   [--top_length_samples]
+
+Evaluates Longformer-PEGASUS
+
+optional arguments:
+  -h, --help            show this help message and exit
+  --longformer_pegasus_checkpoint LONGFORMER_PEGASUS_CHECKPOINT
+                        The name or path of the base model you want to convert
+  --pegasus_pretrained_model PEGASUS_PRETRAINED_MODEL
+                        The name or path of the base model you want to convert
+  --random_seed RANDOM_SEED
+                        random seed for test selection (-1 = don't set random seed)
+  --num_samples NUM_SAMPLES
+                        number of test samples
+  --top_length_samples  skip create long model
+```
 
 ## Hand-Picked Examples
 Please see the following document: [Hand-Picked Examples](examples.md)
