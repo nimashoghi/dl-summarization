@@ -6,12 +6,16 @@
   - [Getting the BIGPATENT Dataset](#getting-the-bigpatent-dataset)
   - [Converting Pretrained PEGASUS to PEGASUS-Longformer](#converting-pretrained-pegasus-to-pegasus-longformer)
   - [Fine-Tuning (Training)](#fine-tuning-training)
+    - [Resume From a Pretrained Checkpoint](#resume-from-a-pretrained-checkpoint)
+  - [Getting Our Best Model Checkpoint](#getting-our-best-model-checkpoint)
   - [Finding the Best Learning Rate](#finding-the-best-learning-rate)
   - [Finding the Highest Supported Batch Size](#finding-the-highest-supported-batch-size)
   - [Evaluating Your Model Against PEGASUS](#evaluating-your-model-against-pegasus)
     - [Testing PEGASUS-Large](#testing-pegasus-large)
     - [Testing PEGASUS-BIGPATENT](#testing-pegasus-bigpatent)
     - [N Longest Examples](#n-longest-examples)
+  - [Finding the Best Gradient Accumulation Batch Size](#finding-the-best-gradient-accumulation-batch-size)
+  - [Our Pretrained Model](#our-pretrained-model)
   - [Hand-Picked Examples](#hand-picked-examples)
 
 ## Clone the Project
@@ -183,6 +187,12 @@ optional arguments:
                         If False you are responsible for calling .backward, .step, zero_grad. Meant to be used with multiple optimizers by advanced users.
 ```
 
+### Resume From a Pretrained Checkpoint
+To resume training based on a pretrained checkpoint, use the `--resume_from_checkpoint` flag. For example, to continue training from our pretrained checkpoint, append the flag `--resume_from_checkpoint ./pretrained/longformer-pegasus-bigpatent-best.ckpt` to your training command.
+
+## Getting Our Best Model Checkpoint
+We have uploaded our best model to Google Drive. You may download this model using the `./pretrained/get-best.sh` script. Note that for our model to work, your must have already created a Longformer-PEGASUS model, based on the `google/pegasus-big_patent` pretrained model. This new model must be stored in the following absolute direcotry: `/workspaces/summarization-remote/converted-models/longformer-pegasus`.
+
 ## Finding the Best Learning Rate
 To find the best learning rate for a specific network, append the `--auto_lr_find` flag to your the training command from above. Then, the trainer will try progressively increasing the learning rate until it finds the optimal one.
 
@@ -192,7 +202,7 @@ To find the highest batch size that will still fit in your GPU memory during tra
 ## Evaluating Your Model Against PEGASUS
 To evaluate your model and compare it to PEGASUS results, run the `evaluate.py` script. See the example below:
 ```bash
-python evaluate.py --longformer_pegasus_checkpoint ./checkpoints-bigpatent/checkpoints-best/epoch=78.ckpt --pegasus_pretrained_model google/pegasus-big_patent --random-seed 25
+python evaluate.py --longformer_pegasus_checkpoint ./pretrained/longformer-pegasus-bigpatent-best.ckpt --pegasus_pretrained_model google/pegasus-big_patent --random-seed 25
 ```
 
 You may pass the following parameters to this script:
@@ -225,6 +235,12 @@ To test `PEGASUS-BIGPATENT`, please use the following pretrained model name: `--
 
 ### N Longest Examples
 To evaluate the N longest examples (like we do on the paper), please append the `--num_samples 100 --top_length_samples` flags to your command.
+
+## Finding the Best Gradient Accumulation Batch Size
+To find the best gradient accumulation batch size, you can run the train command, as shown above, on 1 epoch only (using the `--max_epochs 1` flag), while changing the gradient batches size using the `--accumulate_grad_batches N` flag, where N is the batch size you're trying. Then, compare the final train and validation losses produced by these different runs and pick the best value. Please use the `--deterministic` flag to make sure that all runs use the same random seeding.
+
+## Our Pretrained Model
+Our best pretrained model for Longformer-PEGASUS, fine-tuned on the BIGPATENT dataset, is included in the `pretrained` directory, under the name `longformer-pegasus-bigpatent-best.ckpt`.
 
 ## Hand-Picked Examples
 Please see the following document: [Hand-Picked Examples](examples.md)

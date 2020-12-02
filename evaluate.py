@@ -1,6 +1,5 @@
 import random
 from argparse import ArgumentParser
-from threading import Thread
 
 import torch
 from rouge_score import rouge_scorer
@@ -12,45 +11,10 @@ from summarization.models.longformer_pegasus import LongformerPegasusSummarizer
 from summarization.models.pegasus import PegasusSummarizer
 
 
-def main():
-    parser = ArgumentParser(description="Evaluates Longformer-PEGASUS")
-    parser.add_argument(
-        "--longformer_pegasus_checkpoint",
-        type=str,
-        required=True,
-        help="The name or path of the base model you want to convert",
-    )
-    parser.add_argument(
-        "--pegasus_pretrained_model",
-        type=str,
-        default="google/pegasus-big_patent",
-        help="The name or path of the base model you want to convert",
-    )
-    parser.add_argument(
-        "--random_seed",
-        type=int,
-        default=25,
-        help="random seed for test selection (-1 = don't set random seed)",
-    )
-    parser.add_argument(
-        "--num_samples",
-        type=int,
-        default=600,
-        help="number of test samples",
-    )
-    parser.add_argument(
-        "--top_length_samples", action="store_true", help="skip create long model"
-    )
-    args = parser.parse_args()
-    evaluate(args)
+def generate_text(model, text, max_length=6144, device=None):
+    if device is not None:
+        device = torch.device(device)
 
-
-if __name__ == "__main__":
-    main()
-
-
-def generate_text(model, text, max_length=6144, device="cuda:0"):
-    device = torch.device(device)
     input = model.tokenizer(
         text,
         max_length=max_length,
@@ -59,9 +23,14 @@ def generate_text(model, text, max_length=6144, device="cuda:0"):
         return_attention_mask=True,
         return_tensors="pt",
     )
+
+    if device is not None:
+        input["input_ids"] = input["input_ids"].to(device)
+        input["attention_mask"] = input["attention_mask"].to(device)
+
     beam_outputs = model.generate(
-        input["input_ids"].to(device),
-        attention_mask=input["attention_mask"].to(device),
+        input["input_ids"],
+        attention_mask=input["attention_mask"],
         max_length=256,
         num_beams=5,
         repetition_penalty=5.0,
@@ -130,11 +99,9 @@ def evaluate(args):
         )
 
     for sample_data in tqdm(samples):
-        t1 = Thread(target=run, args=[sample_data, og_model, runs_og, "cuda:0"])
-        t1.start()
+        run(sample_data, og_model, runs_og)
 
-        t2 = Thread(target=run, args=[sample_data, model, runs_us, "cuda:1"])
-        t2.start()
+        run(sample_data, model, runs_us)
 
         description = sample_data["description"]
         abstract = sample_data["abstract"]
@@ -153,9 +120,6 @@ def evaluate(args):
                 generated_length=len(generated),
             )
         )
-
-        t1.join()
-        t2.join()
 
     m_us = dict(
         rouge1=dict(recall=0, precision=0, fmeasure=0),
@@ -197,3 +161,40 @@ def evaluate(args):
             print(
                 f"[{metric} - {name}]: {average_us} us vs. {average_og} pegasus vs. {average_lsa} lsa"
             )
+
+
+def main():
+    parser = ArgumentParser(description="Evaluates Longformer-PEGASUS")
+    parser.add_argument(
+        "--longformer_pegasus_checkpoint",
+        type=str,
+        default="./pretrained/longformer-pegasus-bigpatent-best.ckpt",
+        help="The name or path of the base model you want to convert",
+    )
+    parser.add_argument(
+        "--pegasus_pretrained_model",
+        type=str,
+        default="google/pegasus-big_patent",
+        help="The name or path of the base model you want to convert",
+    )
+    parser.add_argument(
+        "--random_seed",
+        type=int,
+        default=25,
+        help="random seed for test selection (-1 = don't set random seed)",
+    )
+    parser.add_argument(
+        "--num_samples",
+        type=int,
+        default=2,
+        help="number of test samples",
+    )
+    parser.add_argument(
+        "--top_length_samples", action="store_true", help="skip create long model"
+    )
+    args = parser.parse_args()
+    evaluate(args)
+
+
+if __name__ == "__main__":
+    main()
