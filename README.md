@@ -215,6 +215,8 @@ optional arguments:
   --top_length_samples  skip create long model
 ```
 
+The output of this command, assuming it is ran correctly, should be rouge1, rouge2, and rougeL metrics (precision, recall, fmeasure) for our model, PEGASUS, and LSA.
+
 ### Testing PEGASUS-Large
 To test `PEGASUS-Large`, please use the following pretrained model name: `--pegasus_pretrained_model google/pegasus-large`.
 
