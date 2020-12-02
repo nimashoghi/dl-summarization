@@ -9,10 +9,13 @@
   - [Finding the Best Learning Rate](#finding-the-best-learning-rate)
   - [Finding the Highest Supported Batch Size](#finding-the-highest-supported-batch-size)
   - [Evaluating Your Model Against PEGASUS](#evaluating-your-model-against-pegasus)
+    - [Testing PEGASUS-Large](#testing-pegasus-large)
+    - [Testing PEGASUS-BIGPATENT](#testing-pegasus-bigpatent)
+    - [N Longest Examples](#n-longest-examples)
   - [Hand-Picked Examples](#hand-picked-examples)
 
 ## Clone the Project
-You can clone the project by running `git clone https://github.com/nimashoghi/dlt-summarization.git`.
+You can clone the project by running `git clone https://github.com/nimashoghi/dl-summarization.git`.
 
 ## Installing Dependencies
 You must first install all the dependencies in this for this project. You can do this by running the following command (this is assuming you've already cloned the project): `pip install -r requirements.txt`
@@ -211,6 +214,15 @@ optional arguments:
                         number of test samples
   --top_length_samples  skip create long model
 ```
+
+### Testing PEGASUS-Large
+To test `PEGASUS-Large`, please use the following pretrained model name: `--pegasus_pretrained_model google/pegasus-large`.
+
+### Testing PEGASUS-BIGPATENT
+To test `PEGASUS-BIGPATENT`, please use the following pretrained model name: `--pegasus_pretrained_model google/pegasus-big_patent`.
+
+### N Longest Examples
+To evaluate the N longest examples (like we do on the paper), please append the `--num_samples 100 --top_length_samples` flags to your command.
 
 ## Hand-Picked Examples
 Please see the following document: [Hand-Picked Examples](examples.md)
