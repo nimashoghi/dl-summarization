@@ -1,8 +1,0 @@
-gdown
-pandas
-pytorch-lightning
-transformers
-requests
-rouge-score
-ndjson
-beautifulsoup4

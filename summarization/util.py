@@ -20,7 +20,8 @@ def _get_model(model_name: str):
 
         return PegasusSummarizer
     elif model_name == "longformer_pegasus":
-        from summarization.models.longformer_pegasus import LongformerPegasusSummarizer
+        from summarization.models.longformer_pegasus import \
+            LongformerPegasusSummarizer
 
         return LongformerPegasusSummarizer
     else:
@@ -32,10 +33,6 @@ def _get_datamodule(datamodule_name: str):
         from summarization.data.big_patent import BigPatentDataModule
 
         return BigPatentDataModule
-    elif datamodule_name == "tldr_legal":
-        from summarization.data.tldr_legal import TLDRLegalDataModule
-
-        return TLDRLegalDataModule
     else:
         raise Exception(f"Datamodule {datamodule_name} not found!")
 

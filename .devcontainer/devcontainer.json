@@ -1,0 +1,25 @@
+{
+    "name": "Python",
+    "image": "nimashoghi/python:pytorch",
+    "runArgs": [
+        // privileged
+        "--privileged",
+        // enable gpu usage
+        "--gpus=all",
+        // host networking
+        "--network",
+        "host",
+        // volume
+        "-v",
+        "/var/run/docker.sock:/var/run/docker.sock",
+        //shared memory size
+        "--shm-size",
+        "8G"
+    ],
+    "extensions": [
+        "ms-python.python",
+        "ms-python.vscode-pylance",
+        "ms-python.gather",
+        "visualstudioexptteam.vscodeintellicode"
+    ]
+}
