@@ -602,7 +602,7 @@ watchdog = ["watchdog"]
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.8"
-content-hash = "09e213bcfc304c2440578985951608cfbac3bb7a79e7f9c1ba09d20563c538a8"
+content-hash = "6dec6673bbe5b93133db5d4ea30034282f3fd094c572e08a3663ce4310d1fb08"
 
 [metadata.files]
 absl-py = [

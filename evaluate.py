@@ -7,6 +7,7 @@ from rouge_score import rouge_scorer
 from tqdm import tqdm
 
 from summarization.data.big_patent import BigPatentDataset
+from summarization.lsa import LsaSummarizer
 from summarization.models.longformer_pegasus import LongformerPegasusSummarizer
 from summarization.models.pegasus import PegasusSummarizer
 
@@ -88,6 +89,7 @@ def evaluate(args):
 
     og_model = og_model.to("cuda:0")
     model = model.to("cuda:1")
+    lsa = LsaSummarizer()
 
     items = [
         item
@@ -104,6 +106,7 @@ def evaluate(args):
 
     runs_og = []
     runs_us = []
+    runs_lsa = []
 
     def run(sample_data, model, runs, device):
         description = sample_data["description"]
@@ -127,12 +130,29 @@ def evaluate(args):
         )
 
     for sample_data in tqdm(samples):
-        run(sample_data, og_model, runs_og, "cuda:0")
         t1 = Thread(target=run, args=[sample_data, og_model, runs_og, "cuda:0"])
         t1.start()
 
         t2 = Thread(target=run, args=[sample_data, model, runs_us, "cuda:1"])
         t2.start()
+
+        description = sample_data["description"]
+        abstract = sample_data["abstract"]
+        generated = lsa(description, 3)
+        metrics = scorer.score(abstract, generated)
+        info = dict(
+            abstract_length=len(abstract),
+            description_length=len(description),
+        )
+        runs_lsa.append(
+            dict(
+                **info,
+                generated=generated,
+                abstract=abstract,
+                metrics=metrics,
+                generated_length=len(generated),
+            )
+        )
 
         t1.join()
         t2.join()
@@ -147,22 +167,33 @@ def evaluate(args):
         rouge2=dict(recall=0, precision=0, fmeasure=0),
         rougeL=dict(recall=0, precision=0, fmeasure=0),
     )
-    for r1, r2 in zip(runs_og, runs_og):
-        for metric, value in r1["metrics"].items():
+    m_lsa = dict(
+        rouge1=dict(recall=0, precision=0, fmeasure=0),
+        rouge2=dict(recall=0, precision=0, fmeasure=0),
+        rougeL=dict(recall=0, precision=0, fmeasure=0),
+    )
+    for run_us, run_og, run_lsa in zip(runs_og, runs_og, runs_lsa):
+        for metric, value in run_us["metrics"].items():
             m_us[metric]["recall"] += value.recall
             m_us[metric]["precision"] += value.precision
             m_us[metric]["fmeasure"] += value.fmeasure
 
-        for metric, value in r2["metrics"].items():
+        for metric, value in run_og["metrics"].items():
             m_them[metric]["recall"] += value.recall
             m_them[metric]["precision"] += value.precision
             m_them[metric]["fmeasure"] += value.fmeasure
 
-    m_us, m_them
+        for metric, value in run_lsa["metrics"].items():
+            m_lsa[metric]["recall"] += value.recall
+            m_lsa[metric]["precision"] += value.precision
+            m_lsa[metric]["fmeasure"] += value.fmeasure
 
     length = len(runs_og)
-    for metric in set([*m_us.keys(), *m_them.keys()]):
+    for metric in set([*m_us.keys(), *m_them.keys(), *m_lsa.keys()]):
         for name in ("recall", "precision", "fmeasure"):
             average_us = m_us[metric][name] / length
             average_og = m_them[metric][name] / length
-            print(f"[{metric} - {name}]: {average_us} us vs. {average_og} pegasus")
+            average_lsa = m_lsa[metric][name] / length
+            print(
+                f"[{metric} - {name}]: {average_us} us vs. {average_og} pegasus vs. {average_lsa} lsa"
+            )
