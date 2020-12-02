@@ -92,7 +92,7 @@ def create_long_model(
 
 def main():
     parser = argparse.ArgumentParser(
-        description="Convert Pegasus to LongPegasus. Replaces Pegasus encoder's SelfAttnetion with LongformerSelfAttention"
+        description="Convert Pegasus to Longformer-Pegasus. Replaces Pegasus encoder's SelfAttnetion with LongformerSelfAttention"
     )
     parser.add_argument(
         "--base_model",
