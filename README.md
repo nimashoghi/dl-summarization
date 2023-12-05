@@ -1,4 +1,5 @@
 # Legal Text Summarization
+## [Paper URL](https://github.com/nimashoghi/dl-summarization/blob/master/Legal_Text_Summarization.pdf)
 
 - [Legal Text Summarization](#legal-text-summarization)
   - [Clone the Project](#clone-the-project)
